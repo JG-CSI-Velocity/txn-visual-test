@@ -1,0 +1,52 @@
+# ===========================================================================
+# OVERALL SUMMARY
+# ===========================================================================
+
+print("\n" + "="*120)
+print("COMPETITOR DETECTION SUMMARY")
+print("="*120)
+
+if len(all_competitor_data) > 0:
+    summary_df = pd.DataFrame(summary_data)
+    summary_df = summary_df.sort_values('total_amount', ascending=False)
+    
+    # Format for display
+    summary_display = summary_df.copy()
+    summary_display['category'] = summary_display['category'].str.replace('_', ' ').str.title()
+    summary_display['total_amount'] = summary_display['total_amount'].apply(lambda x: f"${x:,.0f}")
+    summary_display['total_transactions'] = summary_display['total_transactions'].apply(lambda x: f"{x:,}")
+    summary_display['unique_accounts'] = summary_display['unique_accounts'].apply(lambda x: f"{x:,}")
+    
+    summary_display.columns = ['Competitor', 'Category', 'Transactions', 'Unique Accounts', 'Total Amount']
+    
+    print(f"\n✓ Found {len(all_competitor_data)} competitors with transaction activity")
+    print(f"Total Competitor Transactions: {summary_df['total_transactions'].sum():,}")
+    print(f"Total Competitor Spend: ${summary_df['total_amount'].sum():,.2f}")
+    print(f"Unique Accounts Using Competitors: {summary_df['unique_accounts'].sum():,}\n")
+    
+    display(summary_display.style.hide(axis='index'))
+    
+    # Category breakdown
+    print("\n📊 BY CATEGORY:")
+    category_summary = summary_df.groupby('category').agg({
+        'total_transactions': 'sum',
+        'unique_accounts': 'sum',
+        'total_amount': 'sum',
+        'competitor': 'count'
+    }).sort_values('total_amount', ascending=False)
+    
+    category_summary.columns = ['Total Transactions', 'Total Accounts', 'Total Amount', 'Competitor Count']
+    category_display = category_summary.copy()
+    category_display.index = category_display.index.str.replace('_', ' ').str.title()
+    category_display['Total Transactions'] = category_display['Total Transactions'].apply(lambda x: f"{x:,}")
+    category_display['Total Accounts'] = category_display['Total Accounts'].apply(lambda x: f"{x:,}")
+    category_display['Total Amount'] = category_display['Total Amount'].apply(lambda x: f"${x:,.0f}")
+    
+    display(category_display)
+    
+else:
+    print("\n⚠ No competitor transactions found in dataset")
+
+print("\n" + "="*120)
+print("✓ Competitor detection complete - data stored in 'all_competitor_data' dictionary")
+print("="*120)
