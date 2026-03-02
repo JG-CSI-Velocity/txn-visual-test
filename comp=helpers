@@ -1,0 +1,187 @@
+# ===========================================================================
+# Helper: Normalize competitor names (roll-up variants)
+# ===========================================================================
+
+def normalize_competitor_name(bank_name: str) -> str:
+    """
+    Normalize competitor names so variants roll up to a single line.
+
+    Examples:
+    - 'GOLDEN 1 CREDIT UNION', 'GOLDEN 1 CU', etc. -> 'GOLDEN 1 CREDIT UNION'
+    - 'REVOLUT PAYMENTS', 'REVOLUT*CARD', etc.     -> 'REVOLUT'
+    """
+    if not isinstance(bank_name, str):
+        return bank_name
+
+    name_u = bank_name.upper()
+
+    # Roll up all Golden 1 Credit Union variants
+    if "GOLDEN 1" in name_u:
+        return "GOLDEN 1 CREDIT UNION"
+
+    # Roll up all Revolut variants
+    if "REVOLUT" in name_u:
+        return "REVOLUT"
+
+    # Default: keep original
+    return bank_name
+
+
+# ===========================================================================
+# M6B-6: BANK COMPETITIVE THREAT ASSESSMENT
+# ===========================================================================
+
+print("\n" + "=" * 120)
+print(" " * 40 + "M6B-6: BANK COMPETITIVE THREAT ASSESSMENT")
+print("=" * 120)
+
+if len(all_competitor_data) > 0:
+    threat_data = []
+
+    # ONLY assess threats from actual banks
+    bank_categories = ['big_nationals', 'regionals', 'credit_unions', 'digital_banks']
+
+    # Total accounts for penetration calculation
+    total_accounts = combined_df['primary_account_num'].nunique()
+
+    # -----------------------------------------------------------------------
+    # Build base threat_data at competitor level
+    # -----------------------------------------------------------------------
+    for competitor, competitor_trans in all_competitor_data.items():
+        category = competitor_trans['competitor_category'].iloc[0]
+
+        # Skip if not a bank
+        if category not in bank_categories:
+            continue
+
+        total_spend = competitor_trans['amount'].sum()
+        unique_accounts = competitor_trans['primary_account_num'].nunique()
+
+        # Account penetration (% of total accounts using this competitor)
+        penetration_pct = (unique_accounts / total_accounts * 100) if total_accounts > 0 else 0
+
+        # Ensure we have a year_month column for growth calc
+        if 'year_month' not in competitor_trans.columns:
+            competitor_trans['year_month'] = pd.to_datetime(
+                competitor_trans['transaction_date']
+            ).dt.to_period('M')
+
+        sorted_months = sorted(competitor_trans['year_month'].unique())
+
+        # Calculate recent growth (last 3 months vs previous 3 months)
+        if len(sorted_months) >= 6:
+            recent_3 = sorted_months[-3:]
+            previous_3 = sorted_months[-6:-3]
+
+            recent_spend = competitor_trans[
+                competitor_trans['year_month'].isin(recent_3)
+            ]['amount'].sum()
+
+            previous_spend = competitor_trans[
+                competitor_trans['year_month'].isin(previous_3)
+            ]['amount'].sum()
+
+            growth_rate = (
+                (recent_spend - previous_spend) / previous_spend * 100
+                if previous_spend > 0 else 0
+            )
+        else:
+            growth_rate = 0
+
+        # Threat Score = Weighted combination
+        # 40% = Account penetration (how many accounts they've captured)
+        # 30% = Total spend (how much money is at risk)
+        # 30% = Growth rate (are they gaining momentum?)
+        threat_score = (
+            (penetration_pct * 4) +                     # 40% weight
+            (total_spend / 100000) * 3 +                # 30% weight
+            (max(growth_rate, 0) / 10) * 3              # 30% weight (only positive growth)
+        )
+
+        threat_data.append({
+            'competitor': competitor,
+            'category': category,
+            'total_spend': total_spend,
+            'unique_accounts': unique_accounts,
+            'penetration_pct': penetration_pct,
+            'growth_rate': growth_rate,
+            'threat_score': threat_score
+        })
+
+    # -----------------------------------------------------------------------
+    # Roll up Golden 1 CU & Revolut (and any future variants) using normalizer
+    # -----------------------------------------------------------------------
+    if len(threat_data) > 0:
+        threat_df = pd.DataFrame(threat_data)
+
+        # Add normalized name
+        threat_df['normalized_bank'] = threat_df['competitor'].apply(normalize_competitor_name)
+
+        # Helper for spend-weighted growth averaging
+        threat_df['growth_weighted'] = threat_df['growth_rate'] * threat_df['total_spend']
+
+        # Group by normalized bank + category
+        rolled_df = (
+            threat_df
+            .groupby(['normalized_bank', 'category'], as_index=False)
+            .agg(
+                total_spend=('total_spend', 'sum'),
+                unique_accounts=('unique_accounts', 'sum'),
+                growth_weighted=('growth_weighted', 'sum')
+            )
+        )
+
+        # Spend-weighted average growth rate
+        rolled_df['growth_rate'] = rolled_df.apply(
+            lambda row: (
+                row['growth_weighted'] / row['total_spend']
+                if row['total_spend'] > 0 else 0
+            ),
+            axis=1
+        )
+
+        # Recompute penetration_pct for rolled-up accounts
+        if total_accounts > 0:
+            rolled_df['penetration_pct'] = rolled_df['unique_accounts'] / total_accounts * 100
+        else:
+            rolled_df['penetration_pct'] = 0
+
+        # Recompute threat_score with same formula
+        rolled_df['threat_score'] = (
+            (rolled_df['penetration_pct'] * 4) +
+            (rolled_df['total_spend'] / 100000) * 3 +
+            (rolled_df['growth_rate'].clip(lower=0) / 10) * 3
+        )
+
+        # Rename normalized_bank back to competitor for display
+        rolled_df = rolled_df.rename(columns={'normalized_bank': 'competitor'})
+
+        # Take Top 15 by threat_score
+        threat_df = rolled_df.sort_values('threat_score', ascending=False).head(15)
+
+        # -------------------------------------------------------------------
+        # Format for display
+        # -------------------------------------------------------------------
+        display_df = threat_df.copy()
+        display_df['category'] = display_df['category'].str.replace('_', ' ').str.title()
+        display_df['total_spend'] = display_df['total_spend'].apply(lambda x: f"${x:,.0f}")
+        display_df['unique_accounts'] = display_df['unique_accounts'].apply(lambda x: f"{x:,}")
+        display_df['penetration_pct'] = display_df['penetration_pct'].apply(lambda x: f"{x:.2f}%")
+        display_df['growth_rate'] = display_df['growth_rate'].apply(lambda x: f"{x:+.1f}%")
+        display_df['threat_score'] = display_df['threat_score'].apply(lambda x: f"{x:.1f}")
+        display_df = display_df.drop(columns=['growth_weighted'], errors='ignore')
+        display_df.columns = [
+            'Bank', 'Category', 'Total Spend', 'Accounts',
+            'Penetration', 'Growth (6mo)', 'Threat Score'
+        ]
+
+        print("\nTop 15 Bank Competitive Threats:")
+        print("Threat Score = 40% Penetration + 30% Total Spend + 30% Growth Rate")
+        print("(Excludes wallets/P2P/BNPL - those are threats to banking itself, not direct competitors)\n")
+        display(display_df.style.hide(axis='index'))
+
+        print("\n💡 Highest threat = High account penetration + Large spend + Growing momentum")
+    else:
+        print("\n⚠ No bank competitors found in dataset")
+
+print("=" * 120)
