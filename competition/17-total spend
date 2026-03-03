@@ -71,19 +71,19 @@ y_pos = range(len(eng_top))
 
 # Stacked bars: Light (left), Moderate (middle), Heavy (right)
 bars_light = ax.barh(y_pos, eng_top['light_pct'],
-                     color=CONF_COLORS['success'], alpha=0.7,
+                     color=GEN_COLORS['success'], alpha=0.7,
                      edgecolor='white', linewidth=1.5, height=0.65,
                      label='Light (<20% of txns)', zorder=3)
 
 bars_mod = ax.barh(y_pos, eng_top['moderate_pct'],
                    left=eng_top['light_pct'],
-                   color=CONF_COLORS['warning'],
+                   color=GEN_COLORS['warning'],
                    edgecolor='white', linewidth=1.5, height=0.65,
                    label='Moderate (20-50%)', zorder=3)
 
 bars_heavy = ax.barh(y_pos, eng_top['heavy_pct'],
                      left=eng_top['light_pct'].values + eng_top['moderate_pct'].values,
-                     color=CONF_COLORS['accent'],
+                     color=GEN_COLORS['accent'],
                      edgecolor='white', linewidth=1.5, height=0.65,
                      label='Heavy (50%+ of txns)', zorder=3)
 
@@ -105,7 +105,7 @@ for i, (_, row) in enumerate(eng_top.iterrows()):
 # Account count annotation on right
 for i, (_, row) in enumerate(eng_top.iterrows()):
     ax.text(101, i, f"{int(row['accounts']):,} accts",
-            fontsize=12, fontweight='bold', color=CONF_COLORS['dark_text'], va='center')
+            fontsize=12, fontweight='bold', color=GEN_COLORS['dark_text'], va='center')
 
 # Y-axis: competitor names with category color dot
 labels = []
@@ -116,17 +116,17 @@ ax.set_yticks(y_pos)
 ax.set_yticklabels(labels, fontsize=12, fontweight='bold')
 ax.set_xlabel('Share of Member Transactions (%)', fontsize=13, fontweight='bold', labelpad=10)
 ax.set_xlim(0, 118)
-ax.xaxis.set_major_formatter(plt.FuncFormatter(fmt_pct))
+ax.xaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_pct))
 
-clean_axes(ax)
-ax.xaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.5)
+gen_clean_axes(ax)
+ax.xaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.5)
 ax.set_axisbelow(True)
 
 ax.set_title('Competitor Engagement Depth',
-             fontsize=20, fontweight='bold', color=CONF_COLORS['dark_text'], pad=20, loc='left')
+             fontsize=20, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
 ax.text(0.0, 0.97,
         "What share of member transactions go to each competitor?",
-        transform=ax.transAxes, fontsize=11, color=CONF_COLORS['muted'], style='italic')
+        transform=ax.transAxes, fontsize=11, color=GEN_COLORS['muted'], style='italic')
 
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.08),
           ncol=3, fontsize=11, frameon=False)
@@ -138,9 +138,9 @@ avg_share_all = eng_acct_df['share_pct'].mean()
 ax.text(0.97, 0.05,
         f"Avg share: {avg_share_all:.1f}%\nHeavy users: {total_heavy:,} / {total_accts:,}",
         transform=ax.transAxes, fontsize=14, fontweight='bold',
-        color=CONF_COLORS['accent'], ha='right', va='bottom',
+        color=GEN_COLORS['accent'], ha='right', va='bottom',
         bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
-                  edgecolor=CONF_COLORS['accent'], alpha=0.9))
+                  edgecolor=GEN_COLORS['accent'], alpha=0.9))
 
 plt.tight_layout()
 plt.subplots_adjust(bottom=0.12)

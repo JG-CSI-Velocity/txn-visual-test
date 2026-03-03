@@ -38,8 +38,8 @@ print("=" * 120)
 if len(all_competitor_data) > 0:
     threat_data = []
 
-    # ONLY assess threats from actual banks
-    bank_categories = ['big_nationals', 'regionals', 'credit_unions', 'digital_banks']
+    # ONLY assess threats from actual banks (derived from config)
+    bank_categories = BANK_CATEGORIES
 
     # Total accounts for penetration calculation
     total_accounts = combined_df['primary_account_num'].nunique()

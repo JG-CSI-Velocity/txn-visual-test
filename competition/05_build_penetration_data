@@ -6,7 +6,7 @@
 # Required by: bubble chart
 
 if len(all_competitor_data) > 0:
-    bank_categories = ['big_nationals', 'regionals', 'credit_unions', 'digital_banks']
+    bank_categories = BANK_CATEGORIES
     total_accounts = combined_df['primary_account_num'].nunique()
 
     penetration_data = []

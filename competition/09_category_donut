@@ -22,7 +22,7 @@ if len(all_competitor_data) > 0:
     # --- LEFT: Donut ---
     ax_donut = fig.add_subplot(gs[0])
 
-    colors = [CATEGORY_PALETTE.get(c, CONF_COLORS['muted']) for c in cat_agg.index]
+    colors = [CATEGORY_PALETTE.get(c, GEN_COLORS['muted']) for c in cat_agg.index]
 
     wedges, texts, autotexts = ax_donut.pie(
         cat_agg['total_transactions'],
@@ -44,11 +44,11 @@ if len(all_competitor_data) > 0:
     ax_donut.text(0, 0, f"{cat_agg['total_transactions'].sum():,.0f}\nTransactions",
                   ha='center', va='center',
                   fontsize=18, fontweight='bold',
-                  color=CONF_COLORS['dark_text'], linespacing=1.5)
+                  color=GEN_COLORS['dark_text'], linespacing=1.5)
 
     ax_donut.set_title("Transaction Share\nby Category",
                        fontsize=22, fontweight='bold',
-                       color=CONF_COLORS['dark_text'], pad=15)
+                       color=GEN_COLORS['dark_text'], pad=15)
 
     # --- RIGHT: Category stats (visual, not a raw table) ---
     ax_stats = fig.add_subplot(gs[1])
@@ -59,7 +59,7 @@ if len(all_competitor_data) > 0:
 
     for i, (cat, row) in enumerate(cat_agg.iterrows()):
         y_pos = y_start - (i * y_step)
-        color = CATEGORY_PALETTE.get(cat, CONF_COLORS['muted'])
+        color = CATEGORY_PALETTE.get(cat, GEN_COLORS['muted'])
 
         # Color dot
         ax_stats.plot(0.02, y_pos, 'o', markersize=16, color=color,
@@ -67,7 +67,7 @@ if len(all_competitor_data) > 0:
 
         # Category name
         ax_stats.text(0.08, y_pos, cat, transform=ax_stats.transAxes,
-                      fontsize=18, fontweight='bold', color=CONF_COLORS['dark_text'],
+                      fontsize=18, fontweight='bold', color=GEN_COLORS['dark_text'],
                       va='center')
 
         # Stats line
@@ -78,12 +78,12 @@ if len(all_competitor_data) > 0:
         )
         ax_stats.text(0.08, y_pos - 0.045, stats_text,
                       transform=ax_stats.transAxes,
-                      fontsize=13, color=CONF_COLORS['muted'], va='center')
+                      fontsize=13, color=GEN_COLORS['muted'], va='center')
 
     # Supertitle
     fig.suptitle("Competitive Landscape by Category",
                  fontsize=28, fontweight='bold',
-                 color=CONF_COLORS['dark_text'], y=1.02)
+                 color=GEN_COLORS['dark_text'], y=1.02)
 
     plt.tight_layout()
     plt.show()

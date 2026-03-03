@@ -26,9 +26,9 @@ for t in autotexts:
 total_txn = cat_data['total_transactions'].sum()
 ax_donut.text(0, 0, f"{total_txn:,.0f}\nTransactions",
               ha='center', va='center', fontsize=17, fontweight='bold',
-              color=FS_COLORS['dark_text'], linespacing=1.5)
+              color=GEN_COLORS['dark_text'], linespacing=1.5)
 ax_donut.set_title("Transaction Share\nby Category", fontsize=22,
-                    fontweight='bold', color=FS_COLORS['dark_text'], pad=15)
+                    fontweight='bold', color=GEN_COLORS['dark_text'], pad=15)
 
 # --- RIGHT: Category stats ---
 ax_stats = fig.add_subplot(gs[1])
@@ -44,13 +44,13 @@ for i, (_, row) in enumerate(cat_data.iterrows()):
     ax_stats.plot(0.02, y_pos, 'o', markersize=14, color=color,
                   transform=ax_stats.transAxes, clip_on=False)
     ax_stats.text(0.07, y_pos, row['category'], transform=ax_stats.transAxes,
-                  fontsize=16, fontweight='bold', color=FS_COLORS['dark_text'], va='center')
+                  fontsize=16, fontweight='bold', color=GEN_COLORS['dark_text'], va='center')
     stats_text = f"{row['total_transactions']:,.0f} txn  |  {row['unique_accounts']:,.0f} accounts"
     ax_stats.text(0.07, y_pos - 0.035, stats_text, transform=ax_stats.transAxes,
-                  fontsize=12, color=FS_COLORS['muted'], va='center')
+                  fontsize=12, color=GEN_COLORS['muted'], va='center')
 
 fig.suptitle("External FinServ Activity Breakdown",
-             fontsize=28, fontweight='bold', color=FS_COLORS['dark_text'], y=1.02)
+             fontsize=28, fontweight='bold', color=GEN_COLORS['dark_text'], y=1.02)
 
 plt.tight_layout()
 plt.show()

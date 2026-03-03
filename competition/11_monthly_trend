@@ -36,7 +36,7 @@ if len(all_competitor_data) > 0:
         monthly.index,
         monthly['transactions'],
         width=25,
-        color=CONF_COLORS['info'],
+        color=GEN_COLORS['info'],
         alpha=0.25,
         label='Monthly Transactions',
         zorder=2
@@ -46,41 +46,41 @@ if len(all_competitor_data) > 0:
     ax1.plot(
         monthly.index,
         monthly['txn_rolling'],
-        color=CONF_COLORS['info'],
+        color=GEN_COLORS['info'],
         linewidth=3.5,
         label='Transaction Trend (3mo avg)',
         zorder=4
     )
 
     ax1.set_ylabel("Transaction Count", fontsize=18, fontweight='bold',
-                    color=CONF_COLORS['info'], labelpad=12)
-    ax1.yaxis.set_major_formatter(plt.FuncFormatter(fmt_count))
-    ax1.tick_params(axis='y', colors=CONF_COLORS['info'])
+                    color=GEN_COLORS['info'], labelpad=12)
+    ax1.yaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
+    ax1.tick_params(axis='y', colors=GEN_COLORS['info'])
 
     # Second axis: Unique accounts
     ax2 = ax1.twinx()
     ax2.plot(
         monthly.index,
         monthly['acct_rolling'],
-        color=CONF_COLORS['accent'],
+        color=GEN_COLORS['accent'],
         linewidth=3.5,
         linestyle='--',
         label='Unique Accounts (3mo avg)',
         zorder=4
     )
     ax2.set_ylabel("Unique Accounts", fontsize=18, fontweight='bold',
-                    color=CONF_COLORS['accent'], labelpad=12)
-    ax2.yaxis.set_major_formatter(plt.FuncFormatter(fmt_count))
-    ax2.tick_params(axis='y', colors=CONF_COLORS['accent'])
+                    color=GEN_COLORS['accent'], labelpad=12)
+    ax2.yaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
+    ax2.tick_params(axis='y', colors=GEN_COLORS['accent'])
 
     # Axes cleanup
-    clean_axes(ax1, keep_left=True, keep_bottom=True)
+    gen_clean_axes(ax1, keep_left=True, keep_bottom=True)
     ax2.spines['top'].set_visible(False)
     ax2.spines['left'].set_visible(False)
     ax2.grid(False)
 
     # Light horizontal grid on primary axis
-    ax1.yaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.7)
+    ax1.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
     ax1.set_axisbelow(True)
 
     # X-axis formatting
@@ -93,15 +93,15 @@ if len(all_competitor_data) > 0:
     ax1.set_title(
         "Competitor Activity Trend",
         fontsize=26, fontweight='bold',
-        color=CONF_COLORS['dark_text'], pad=20, loc='left'
+        color=GEN_COLORS['dark_text'], pad=20, loc='left'
     )
     ax1.text(0.0, 0.97, "Are competitors gaining momentum with your customers?",
              transform=ax1.transAxes, fontsize=15,
-             color=CONF_COLORS['muted'], style='italic')
+             color=GEN_COLORS['muted'], style='italic')
 
     # ----- Callout: latest growth rate -----
     latest_growth = monthly['txn_growth'].iloc[-1] if len(monthly) > 1 else 0
-    growth_color = CONF_COLORS['accent'] if latest_growth > 0 else CONF_COLORS['success']
+    growth_color = GEN_COLORS['accent'] if latest_growth > 0 else GEN_COLORS['success']
     growth_label = "GROWING" if latest_growth > 0 else "DECLINING"
     ax1.text(
         0.99, 0.95,

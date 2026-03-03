@@ -6,9 +6,9 @@ multi_dist = multi_product_df['category_count'].value_counts().sort_index()
 
 fig, ax = plt.subplots(figsize=(14, 7))
 
-bar_colors = [FS_COLORS['info'] if x == 1 else
-              FS_COLORS['warning'] if x == 2 else
-              FS_COLORS['accent'] for x in multi_dist.index]
+bar_colors = [GEN_COLORS['info'] if x == 1 else
+              GEN_COLORS['warning'] if x == 2 else
+              GEN_COLORS['accent'] for x in multi_dist.index]
 
 bars = ax.bar(multi_dist.index, multi_dist.values,
               color=bar_colors, edgecolor='white', linewidth=2, alpha=0.85, zorder=3)
@@ -19,31 +19,31 @@ for bar, (cat_count, acc_count) in zip(bars, zip(multi_dist.index, multi_dist.va
     ax.text(bar.get_x() + bar.get_width() / 2., height,
             f'{acc_count:,}\n({pct:.0f}%)',
             ha='center', va='bottom', fontsize=14, fontweight='bold',
-            color=FS_COLORS['dark_text'])
+            color=GEN_COLORS['dark_text'])
 
 ax.set_xlabel("Number of External FinServ Categories", fontsize=18, fontweight='bold', labelpad=12)
 ax.set_ylabel("Number of Accounts", fontsize=18, fontweight='bold', labelpad=12)
 ax.set_xticks(multi_dist.index)
-ax.yaxis.set_major_formatter(plt.FuncFormatter(fs_fmt_count))
+ax.yaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
 
-fs_clean_axes(ax)
-ax.yaxis.grid(True, color=FS_COLORS['grid'], linewidth=0.5, alpha=0.7)
+gen_clean_axes(ax)
+ax.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
 ax.set_axisbelow(True)
 
 ax.set_title("External Product Depth per Member",
-             fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
+             fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
 ax.text(0.0, 0.97, "More categories = deeper external relationships = higher priority",
-        transform=ax.transAxes, fontsize=15, color=FS_COLORS['muted'], style='italic')
+        transform=ax.transAxes, fontsize=15, color=GEN_COLORS['muted'], style='italic')
 
 # Callout box
 multi_2plus = multi_dist[multi_dist.index >= 2].sum()
 multi_3plus = multi_dist[multi_dist.index >= 3].sum()
 callout = f"2+ categories: {multi_2plus:,} accounts\n3+ categories: {multi_3plus:,} accounts\n(HIGHEST PRIORITY)"
 ax.text(0.97, 0.95, callout, transform=ax.transAxes,
-        fontsize=15, fontweight='bold', color=FS_COLORS['accent'],
+        fontsize=15, fontweight='bold', color=GEN_COLORS['accent'],
         ha='right', va='top',
         bbox=dict(boxstyle='round,pad=0.5', facecolor='white',
-                  edgecolor=FS_COLORS['accent'], alpha=0.9))
+                  edgecolor=GEN_COLORS['accent'], alpha=0.9))
 
 plt.tight_layout()
 plt.show()

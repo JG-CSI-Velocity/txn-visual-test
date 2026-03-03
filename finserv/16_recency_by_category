@@ -20,10 +20,10 @@ rec_df = rec_df.sort_values('total', ascending=True)
 fig, ax = plt.subplots(figsize=(14, 8))
 
 tier_colors = {
-    'Active (0-30d)':   FS_COLORS['accent'],
-    'Cooling (30-90d)': FS_COLORS['warning'],
-    'Dormant (90-365d)': FS_COLORS['info'],
-    'Lapsed (365d+)':   FS_COLORS['grid'],
+    'Active (0-30d)':   GEN_COLORS['accent'],
+    'Cooling (30-90d)': GEN_COLORS['warning'],
+    'Dormant (90-365d)': GEN_COLORS['info'],
+    'Lapsed (365d+)':   GEN_COLORS['grid'],
 }
 
 left = np.zeros(len(rec_df))
@@ -47,15 +47,15 @@ for tier in tier_order:
 ax.set_yticks(range(len(rec_df)))
 ax.set_yticklabels(rec_df['category'], fontsize=13, fontweight='bold')
 ax.set_xlabel("Number of Accounts", fontsize=18, fontweight='bold', labelpad=12)
-ax.xaxis.set_major_formatter(plt.FuncFormatter(fs_fmt_count))
+ax.xaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
 
-fs_clean_axes(ax)
+gen_clean_axes(ax)
 ax.set_axisbelow(True)
 
 ax.set_title("Leakage Recency by Category",
-             fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
+             fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
 ax.text(0.0, 0.97, "Red = active leakage (last 30 days)  |  Gray = lapsed (365d+)",
-        transform=ax.transAxes, fontsize=14, color=FS_COLORS['muted'], style='italic')
+        transform=ax.transAxes, fontsize=14, color=GEN_COLORS['muted'], style='italic')
 
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.08),
           ncol=4, fontsize=13, frameon=False)

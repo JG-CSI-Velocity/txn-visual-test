@@ -11,10 +11,10 @@ avg_categories = multi_product_df['category_count'].mean()
 active_30d = len(multi_product_df[multi_product_df['recency_days'] <= 30])
 
 kpis = [
-    (f"{pct_leaking:.1f}%",     "of Members Pay\nExternal FinServ",   FS_COLORS['accent']),
-    (f"{len(financial_services_data)}", "Product Categories\nDetected",  FS_COLORS['info']),
-    (f"{avg_categories:.1f}",   "Avg External Services\nper Member",  FS_COLORS['warning']),
-    (f"{active_30d:,}",         "Active Leakage\n(Last 30 Days)",     FS_COLORS['success']),
+    (f"{pct_leaking:.1f}%",     "of Members Pay\nExternal FinServ",   GEN_COLORS['accent']),
+    (f"{len(financial_services_data)}", "Product Categories\nDetected",  GEN_COLORS['info']),
+    (f"{avg_categories:.1f}",   "Avg External Services\nper Member",  GEN_COLORS['warning']),
+    (f"{active_30d:,}",         "Active Leakage\n(Last 30 Days)",     GEN_COLORS['success']),
 ]
 
 fig, axes = plt.subplots(1, 4, figsize=(18, 5))
@@ -37,12 +37,12 @@ for ax, (value, label, color) in zip(axes, kpis):
             fontsize=48, fontweight='bold', color=color,
             ha='center', va='center')
     ax.text(0.5, 0.20, label, transform=ax.transAxes,
-            fontsize=15, fontweight='bold', color=FS_COLORS['dark_text'],
+            fontsize=15, fontweight='bold', color=GEN_COLORS['dark_text'],
             ha='center', va='center', linespacing=1.4)
 
 fig.suptitle("Financial Services Leakage at a Glance",
              fontsize=28, fontweight='bold',
-             color=FS_COLORS['dark_text'], y=1.04)
+             color=GEN_COLORS['dark_text'], y=1.04)
 
 plt.tight_layout()
 plt.show()

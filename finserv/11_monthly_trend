@@ -27,45 +27,45 @@ fig, ax1 = plt.subplots(figsize=(14, 7))
 
 # Transaction bars (light)
 ax1.bar(monthly.index, monthly['transactions'], width=25,
-        color=FS_COLORS['info'], alpha=0.25, label='Monthly Transactions', zorder=2)
+        color=GEN_COLORS['info'], alpha=0.25, label='Monthly Transactions', zorder=2)
 
 # Transaction rolling line
-ax1.plot(monthly.index, monthly['txn_rolling'], color=FS_COLORS['info'],
+ax1.plot(monthly.index, monthly['txn_rolling'], color=GEN_COLORS['info'],
          linewidth=3.5, label='Transaction Trend (3mo avg)', zorder=4)
 
 ax1.set_ylabel("Transaction Count", fontsize=18, fontweight='bold',
-                color=FS_COLORS['info'], labelpad=12)
-ax1.yaxis.set_major_formatter(plt.FuncFormatter(fs_fmt_count))
-ax1.tick_params(axis='y', colors=FS_COLORS['info'])
+                color=GEN_COLORS['info'], labelpad=12)
+ax1.yaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
+ax1.tick_params(axis='y', colors=GEN_COLORS['info'])
 
 # Second axis: Unique accounts
 ax2 = ax1.twinx()
-ax2.plot(monthly.index, monthly['acct_rolling'], color=FS_COLORS['accent'],
+ax2.plot(monthly.index, monthly['acct_rolling'], color=GEN_COLORS['accent'],
          linewidth=3.5, linestyle='--', label='Unique Accounts (3mo avg)', zorder=4)
 ax2.set_ylabel("Unique Accounts", fontsize=18, fontweight='bold',
-                color=FS_COLORS['accent'], labelpad=12)
-ax2.yaxis.set_major_formatter(plt.FuncFormatter(fs_fmt_count))
-ax2.tick_params(axis='y', colors=FS_COLORS['accent'])
+                color=GEN_COLORS['accent'], labelpad=12)
+ax2.yaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
+ax2.tick_params(axis='y', colors=GEN_COLORS['accent'])
 
-fs_clean_axes(ax1)
+gen_clean_axes(ax1)
 ax2.spines['top'].set_visible(False)
 ax2.spines['left'].set_visible(False)
 ax2.grid(False)
 
-ax1.yaxis.grid(True, color=FS_COLORS['grid'], linewidth=0.5, alpha=0.7)
+ax1.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
 ax1.set_axisbelow(True)
 
 ax1.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
 ax1.tick_params(axis='x', rotation=45)
 
 ax1.set_title("External FinServ Activity Over Time",
-              fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
+              fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
 ax1.text(0.0, 0.97, "Is the money walking out the door faster or slower?",
-         transform=ax1.transAxes, fontsize=15, color=FS_COLORS['muted'], style='italic')
+         transform=ax1.transAxes, fontsize=15, color=GEN_COLORS['muted'], style='italic')
 
 # Growth callout
 latest_growth = monthly['txn_growth'].iloc[-1] if len(monthly) > 1 else 0
-growth_color = FS_COLORS['accent'] if latest_growth > 0 else FS_COLORS['success']
+growth_color = GEN_COLORS['accent'] if latest_growth > 0 else GEN_COLORS['success']
 growth_label = "GROWING" if latest_growth > 0 else "DECLINING"
 ax1.text(0.99, 0.95, f"Latest month: {latest_growth:+.1f}% ({growth_label})",
          transform=ax1.transAxes, fontsize=16, fontweight='bold', color=growth_color,

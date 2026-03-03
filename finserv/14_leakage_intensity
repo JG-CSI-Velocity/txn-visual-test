@@ -13,9 +13,9 @@ top_leakers['priority_tier'] = pd.cut(
 )
 
 tier_colors = {
-    'Critical': FS_COLORS['accent'],
-    'Engage':   FS_COLORS['warning'],
-    'Monitor':  FS_COLORS['info']
+    'Critical': GEN_COLORS['accent'],
+    'Engage':   GEN_COLORS['warning'],
+    'Monitor':  GEN_COLORS['info']
 }
 
 fig, ax = plt.subplots(figsize=(14, 9))
@@ -30,7 +30,7 @@ for tier in ['Monitor', 'Engage', 'Critical']:
     ax.scatter(
         subset['category_count'],
         subset['total_txn'],
-        s=sizes, c=tier_colors.get(tier, FS_COLORS['muted']),
+        s=sizes, c=tier_colors.get(tier, GEN_COLORS['muted']),
         alpha=0.65, edgecolor='white', linewidth=1.5,
         label=f"{tier} ({len(subset)})", zorder=3
     )
@@ -38,20 +38,20 @@ for tier in ['Monitor', 'Engage', 'Critical']:
 # Jitter x slightly for visibility
 ax.set_xlabel("External FinServ Categories Used", fontsize=18, fontweight='bold', labelpad=12)
 ax.set_ylabel("Total External Transactions", fontsize=18, fontweight='bold', labelpad=12)
-ax.yaxis.set_major_formatter(plt.FuncFormatter(fs_fmt_count))
+ax.yaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
 
 # Force integer x-ticks
 ax.set_xticks(range(1, int(top_leakers['category_count'].max()) + 1))
 
-fs_clean_axes(ax)
-ax.yaxis.grid(True, color=FS_COLORS['grid'], linewidth=0.5, alpha=0.5)
+gen_clean_axes(ax)
+ax.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.5)
 ax.set_axisbelow(True)
 
 ax.set_title("Leakage Intensity: Top 50 Accounts",
-             fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
+             fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
 ax.text(0.0, 0.97,
         "Score = 30% breadth + 30% depth + 40% recency  |  Bubble size = urgency",
-        transform=ax.transAxes, fontsize=14, color=FS_COLORS['muted'], style='italic')
+        transform=ax.transAxes, fontsize=14, color=GEN_COLORS['muted'], style='italic')
 
 legend = ax.legend(
     loc='upper center', bbox_to_anchor=(0.5, -0.08),

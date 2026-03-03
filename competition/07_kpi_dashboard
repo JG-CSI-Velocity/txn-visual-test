@@ -20,10 +20,10 @@ if len(all_competitor_data) > 0:
 
     # ----- KPI card layout -----
     kpis = [
-        (f"{pct_accounts:.1f}%",   "of Accounts\nUsing Competitors",  CONF_COLORS['accent']),
-        (f"{pct_trans:.1f}%",      "of Transactions\nGo to Competitors", CONF_COLORS['info']),
-        (f"{total_competitors_found}", "Competitors\nDetected",        CONF_COLORS['warning']),
-        (f"{avg_txn_per_account:.1f}", "Avg Transactions\nper Account", CONF_COLORS['success']),
+        (f"{pct_accounts:.1f}%",   "of Accounts\nUsing Competitors",  GEN_COLORS['accent']),
+        (f"{pct_trans:.1f}%",      "of Transactions\nGo to Competitors", GEN_COLORS['info']),
+        (f"{total_competitors_found}", "Competitors\nDetected",        GEN_COLORS['warning']),
+        (f"{avg_txn_per_account:.1f}", "Avg Transactions\nper Account", GEN_COLORS['success']),
     ]
 
     fig, axes = plt.subplots(1, 4, figsize=(18, 5))
@@ -52,13 +52,13 @@ if len(all_competitor_data) > 0:
 
         # Label
         ax.text(0.5, 0.20, label, transform=ax.transAxes,
-                fontsize=15, fontweight='bold', color=CONF_COLORS['dark_text'],
+                fontsize=15, fontweight='bold', color=GEN_COLORS['dark_text'],
                 ha='center', va='center', linespacing=1.4)
 
     # Supertitle
     fig.suptitle("Competitive Exposure at a Glance",
                  fontsize=28, fontweight='bold',
-                 color=CONF_COLORS['dark_text'],
+                 color=GEN_COLORS['dark_text'],
                  y=1.04)
 
     plt.tight_layout()

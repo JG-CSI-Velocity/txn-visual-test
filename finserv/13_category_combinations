@@ -4,6 +4,8 @@
 # Co-occurrence matrix: if a member uses Auto Loans externally,
 # what else are they using? Reveals cross-sell chains.
 
+from itertools import combinations
+
 categories_list = list(all_financial_accounts.keys())
 
 # Build co-occurrence matrix
@@ -46,9 +48,9 @@ ax.set_xticklabels(ax.get_xticklabels(), fontsize=12, fontweight='bold', rotatio
 ax.set_yticklabels(ax.get_yticklabels(), fontsize=12, fontweight='bold', rotation=0)
 
 ax.set_title("Product Co-Occurrence Matrix",
-             fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
+             fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
 ax.text(0.0, 0.97, "Hot cells = members using both external services. These reveal cross-sell chains.",
-        transform=ax.transAxes, fontsize=14, color=FS_COLORS['muted'], style='italic')
+        transform=ax.transAxes, fontsize=14, color=GEN_COLORS['muted'], style='italic')
 
 plt.tight_layout()
 plt.show()

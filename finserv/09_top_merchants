@@ -33,24 +33,24 @@ if len(all_merchant_data) > 0:
         ax.text(
             row['unique_accounts'] * 1.01, i,
             f"{row['unique_accounts']:,.0f} accounts  ({row['transactions']:,.0f} txn)",
-            fontsize=12, fontweight='bold', color=FS_COLORS['dark_text'], va='center'
+            fontsize=12, fontweight='bold', color=GEN_COLORS['dark_text'], va='center'
         )
 
     ax.set_yticks(range(len(plot_data)))
     labels = [str(m)[:30] + '..' if len(str(m)) > 32 else str(m) for m in plot_data['merchant']]
     ax.set_yticklabels(labels, fontsize=12, fontweight='bold')
     ax.set_xlabel("Unique Accounts", fontsize=18, fontweight='bold', labelpad=12)
-    ax.xaxis.set_major_formatter(plt.FuncFormatter(fs_fmt_count))
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
 
-    fs_clean_axes(ax)
-    ax.xaxis.grid(True, color=FS_COLORS['grid'], linewidth=0.5, alpha=0.7)
+    gen_clean_axes(ax)
+    ax.xaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
     ax.set_axisbelow(True)
     ax.set_xlim(0, plot_data['unique_accounts'].max() * 1.40)
 
     ax.set_title("Top 15 External Merchants by Member Reach",
-                 fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
+                 fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
     ax.text(0.0, 0.97, "These specific companies have the most relationships with your members",
-            transform=ax.transAxes, fontsize=15, color=FS_COLORS['muted'], style='italic')
+            transform=ax.transAxes, fontsize=15, color=GEN_COLORS['muted'], style='italic')
 
     # Category legend
     legend_cats = top_merchants['category'].unique()

@@ -46,15 +46,15 @@ def plot_activity_vs_growth(
     # Quadrant lines at medians
     med_x = plot_df['txn_per_account'].median()
     med_y = plot_df['growth_rate'].median()
-    ax.axhline(y=med_y, color=CONF_COLORS['muted'], linewidth=1.5,
+    ax.axhline(y=med_y, color=GEN_COLORS['muted'], linewidth=1.5,
                linestyle='--', alpha=0.4, zorder=1)
-    ax.axvline(x=med_x, color=CONF_COLORS['muted'], linewidth=1.5,
+    ax.axvline(x=med_x, color=GEN_COLORS['muted'], linewidth=1.5,
                linestyle='--', alpha=0.4, zorder=1)
 
     # Plot points
     for _, row in plot_df.iterrows():
-        color = CATEGORY_PALETTE.get(row['category_label'], CONF_COLORS['muted'])
-        edge = CONF_COLORS['accent'] if row['growth_rate'] > 10 else 'white'
+        color = CATEGORY_PALETTE.get(row['category_label'], GEN_COLORS['muted'])
+        edge = GEN_COLORS['accent'] if row['growth_rate'] > 10 else 'white'
         ax.scatter(
             row['txn_per_account'], row['growth_rate'],
             s=300, color=color, alpha=0.8,
@@ -72,7 +72,7 @@ def plot_activity_vs_growth(
             xy=(row['txn_per_account'], row['growth_rate']),
             xytext=(8, 10), textcoords='offset points',
             fontsize=12, fontweight='bold',
-            color=CONF_COLORS['dark_text'],
+            color=GEN_COLORS['dark_text'],
             path_effects=[pe.withStroke(linewidth=3, foreground='white')],
             zorder=5
         )
@@ -83,20 +83,20 @@ def plot_activity_vs_growth(
     ax.set_ylabel("Growth Rate (%)", fontsize=16, fontweight='bold', labelpad=12)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:+.0f}%"))
 
-    clean_axes(ax)
-    ax.yaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.5)
+    gen_clean_axes(ax)
+    ax.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.5)
     ax.set_axisbelow(True)
 
     # Title
     ax.set_title(title, fontsize=24, fontweight='bold',
-                 color=CONF_COLORS['dark_text'], pad=20, loc='left')
+                 color=GEN_COLORS['dark_text'], pad=20, loc='left')
     ax.text(0.0, 0.97, subtitle, transform=ax.transAxes,
-            fontsize=14, color=CONF_COLORS['muted'], style='italic')
+            fontsize=14, color=GEN_COLORS['muted'], style='italic')
 
     # Legend
     legend_cats = plot_df['category_label'].unique()
     legend_handles = [
-        plt.scatter([], [], s=120, color=CATEGORY_PALETTE.get(c, CONF_COLORS['muted']),
+        plt.scatter([], [], s=120, color=CATEGORY_PALETTE.get(c, GEN_COLORS['muted']),
                     edgecolor='white', linewidth=1.5, label=c)
         for c in legend_cats
     ]

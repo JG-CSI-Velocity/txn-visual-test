@@ -5,7 +5,7 @@
 # Quadrants: Watch | Defend | Monitor | Act Now
 
 if len(all_competitor_data) > 0:
-    bank_categories = ['big_nationals', 'regionals', 'credit_unions', 'digital_banks']
+    bank_categories = BANK_CATEGORIES
     total_accounts = combined_df['primary_account_num'].nunique()
 
     quad_data = []
@@ -74,32 +74,32 @@ if len(all_competitor_data) > 0:
 
         # Top-right = danger zone (light red)
         ax.axhspan(med_act, y_max, xmin=med_pen / x_max, xmax=1,
-                    color=CONF_COLORS['accent'], alpha=0.04, zorder=0)
+                    color=GEN_COLORS['accent'], alpha=0.04, zorder=0)
         # Bottom-left = safe zone (light green)
         ax.axhspan(y_min, med_act, xmin=0, xmax=med_pen / x_max,
-                    color=CONF_COLORS['success'], alpha=0.04, zorder=0)
+                    color=GEN_COLORS['success'], alpha=0.04, zorder=0)
 
         # Quadrant divider lines
-        ax.axhline(y=med_act, color=CONF_COLORS['muted'], linewidth=1.5,
+        ax.axhline(y=med_act, color=GEN_COLORS['muted'], linewidth=1.5,
                     linestyle='--', alpha=0.5, zorder=1)
-        ax.axvline(x=med_pen, color=CONF_COLORS['muted'], linewidth=1.5,
+        ax.axvline(x=med_pen, color=GEN_COLORS['muted'], linewidth=1.5,
                     linestyle='--', alpha=0.5, zorder=1)
 
         # Quadrant labels
         label_props = dict(fontsize=14, fontweight='bold', alpha=0.3, ha='center', va='center')
         ax.text(med_pen * 0.5, med_act + (y_max - med_act) * 0.5, "WATCH",
-                color=CONF_COLORS['warning'], **label_props, transform=ax.transData)
+                color=GEN_COLORS['warning'], **label_props, transform=ax.transData)
         ax.text(med_pen + (x_max - med_pen) * 0.5, med_act + (y_max - med_act) * 0.5, "DEFEND",
-                color=CONF_COLORS['accent'], **label_props, transform=ax.transData)
+                color=GEN_COLORS['accent'], **label_props, transform=ax.transData)
         ax.text(med_pen * 0.5, med_act * 0.5, "MONITOR",
-                color=CONF_COLORS['success'], **label_props, transform=ax.transData)
+                color=GEN_COLORS['success'], **label_props, transform=ax.transData)
         ax.text(med_pen + (x_max - med_pen) * 0.5, med_act * 0.5, "ACT NOW",
-                color=CONF_COLORS['info'], **label_props, transform=ax.transData)
+                color=GEN_COLORS['info'], **label_props, transform=ax.transData)
 
         # Plot bubbles
         for _, row in qdf.iterrows():
-            color = CATEGORY_PALETTE.get(row['category_label'], CONF_COLORS['muted'])
-            edge = CONF_COLORS['accent'] if row['growth_rate'] > 10 else 'white'
+            color = CATEGORY_PALETTE.get(row['category_label'], GEN_COLORS['muted'])
+            edge = GEN_COLORS['accent'] if row['growth_rate'] > 10 else 'white'
             ax.scatter(
                 row['penetration_pct'], row['activity_index'],
                 s=row['bubble_size'], color=color, alpha=0.75,
@@ -116,7 +116,7 @@ if len(all_competitor_data) > 0:
                 xy=(row['penetration_pct'], row['activity_index']),
                 xytext=(6, 8), textcoords='offset points',
                 fontsize=11, fontweight='bold',
-                color=CONF_COLORS['dark_text'],
+                color=GEN_COLORS['dark_text'],
                 path_effects=[pe.withStroke(linewidth=3, foreground='white')],
                 zorder=5
             )
@@ -124,26 +124,26 @@ if len(all_competitor_data) > 0:
         # Axes
         ax.set_xlabel("Account Penetration (%)", fontsize=18, fontweight='bold', labelpad=12)
         ax.set_ylabel("Transaction Activity Index", fontsize=18, fontweight='bold', labelpad=12)
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(fmt_pct))
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_pct))
         ax.set_xlim(0, x_max)
         ax.set_ylim(y_min, y_max)
 
-        clean_axes(ax)
-        ax.yaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.5)
+        gen_clean_axes(ax)
+        ax.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.5)
         ax.set_axisbelow(True)
 
         # Title
         ax.set_title("Threat Quadrant",
                      fontsize=28, fontweight='bold',
-                     color=CONF_COLORS['dark_text'], pad=20, loc='left')
+                     color=GEN_COLORS['dark_text'], pad=20, loc='left')
         ax.text(0.0, 0.97, "Bubble size = growth momentum  |  Red border = fast growers (>10%)",
                 transform=ax.transAxes, fontsize=13,
-                color=CONF_COLORS['muted'], style='italic')
+                color=GEN_COLORS['muted'], style='italic')
 
         # Category legend
         legend_cats = qdf['category_label'].unique()
         legend_handles = [
-            plt.scatter([], [], s=150, color=CATEGORY_PALETTE.get(c, CONF_COLORS['muted']),
+            plt.scatter([], [], s=150, color=CATEGORY_PALETTE.get(c, GEN_COLORS['muted']),
                         edgecolor='white', linewidth=1.5, label=c)
             for c in legend_cats
         ]

@@ -35,7 +35,7 @@ def plot_competitive_landscape_bubble(
 
     # Colors per row
     chart_df['color'] = chart_df['category_label'].map(
-        lambda c: CATEGORY_PALETTE.get(c, CONF_COLORS['muted'])
+        lambda c: CATEGORY_PALETTE.get(c, GEN_COLORS['muted'])
     )
 
     # ----- Build chart -----
@@ -78,35 +78,35 @@ def plot_competitive_landscape_bubble(
             textcoords='offset points',
             fontsize=12,
             fontweight='bold',
-            color=CONF_COLORS['dark_text'],
+            color=GEN_COLORS['dark_text'],
             path_effects=[pe.withStroke(linewidth=3, foreground='white')],
             zorder=5
         )
 
     # ----- Axes -----
     ax.set_xlabel("Account Penetration (%)", fontsize=18, fontweight='bold',
-                  color=CONF_COLORS['dark_text'], labelpad=12)
+                  color=GEN_COLORS['dark_text'], labelpad=12)
     ax.set_ylabel("Transaction Volume Index", fontsize=18, fontweight='bold',
-                  color=CONF_COLORS['dark_text'], labelpad=12)
-    ax.xaxis.set_major_formatter(plt.FuncFormatter(fmt_pct))
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(fmt_index))
+                  color=GEN_COLORS['dark_text'], labelpad=12)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_pct))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_index))
 
-    clean_axes(ax)
+    gen_clean_axes(ax)
 
     # Light reference grid (horizontal only)
-    ax.yaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.7)
+    ax.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
     ax.set_axisbelow(True)
 
     # ----- Title block -----
     ax.set_title(title, fontsize=26, fontweight='bold',
-                 color=CONF_COLORS['dark_text'], pad=20, loc='left')
+                 color=GEN_COLORS['dark_text'], pad=20, loc='left')
     ax.text(0.0, 0.97, subtitle, transform=ax.transAxes,
-            fontsize=15, color=CONF_COLORS['muted'], style='italic')
+            fontsize=15, color=GEN_COLORS['muted'], style='italic')
 
     # ----- Legend (category colors) -----
     legend_cats = chart_df['category_label'].unique()
     legend_handles = [
-        plt.scatter([], [], s=150, color=CATEGORY_PALETTE.get(c, CONF_COLORS['muted']),
+        plt.scatter([], [], s=150, color=CATEGORY_PALETTE.get(c, GEN_COLORS['muted']),
                     edgecolor='white', linewidth=1.5, label=c)
         for c in legend_cats
     ]
@@ -123,7 +123,7 @@ def plot_competitive_landscape_bubble(
 
     # Size reference note
     ax.text(0.99, 0.01, "Bubble size = Account reach",
-            transform=ax.transAxes, fontsize=11, color=CONF_COLORS['muted'],
+            transform=ax.transAxes, fontsize=11, color=GEN_COLORS['muted'],
             ha='right', va='bottom', style='italic')
 
     # Margins so bubbles don't clip
