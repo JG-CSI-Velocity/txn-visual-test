@@ -1,0 +1,28 @@
+# ===========================================================================
+# ACCOUNT SUMMARIES: Per-Competitor Account-Level Metrics
+# ===========================================================================
+# Builds all_account_summaries dict for downstream deep-dive visualizations.
+# Lightweight data prep -- no display output.
+
+if len(all_competitor_data) > 0:
+    all_account_summaries = {}
+
+    for competitor, comp_trans in all_competitor_data.items():
+        acct = comp_trans.groupby('primary_account_num').agg(
+            total_amount=('amount', 'sum'),
+            txn_count=('amount', 'count'),
+            avg_amount=('amount', 'mean'),
+            first_txn=('transaction_date', 'min'),
+            last_txn=('transaction_date', 'max'),
+        ).round(2)
+
+        acct['days_active'] = (acct['last_txn'] - acct['first_txn']).dt.days
+        acct['recency_days'] = (pd.Timestamp.now() - acct['last_txn']).dt.days
+        acct = acct.sort_values('total_amount', ascending=False)
+
+        all_account_summaries[competitor] = acct
+
+    print(f"    Built account summaries for {len(all_account_summaries)} competitors")
+else:
+    all_account_summaries = {}
+    print("    No competitor data -- skipping account summaries")

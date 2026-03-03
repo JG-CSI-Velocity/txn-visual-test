@@ -1,0 +1,87 @@
+# ===========================================================================
+# SPEND SEGMENTATION: Competitor Wallet-Share Analysis
+# ===========================================================================
+# Single canonical build of competitor_spend_analysis.
+# 3-tier segments: CU-Focused (<25%), Balanced (25-50%), Competitor-Heavy (>50%)
+# Also defines DEEP_DIVE_TOP_N for downstream per-competitor charts.
+
+# How many competitors get individual deep-dive charts (cells 25-29)
+DEEP_DIVE_TOP_N = 8
+
+SEGMENT_LABELS = ['CU-Focused', 'Balanced', 'Competitor-Heavy']
+SEGMENT_BINS   = [0, 25, 50, 100]
+
+SEGMENT_PALETTE = {
+    'Competitor-Heavy': GEN_COLORS['accent'],
+    'Balanced':         GEN_COLORS['warning'],
+    'CU-Focused':       GEN_COLORS['success'],
+}
+
+if len(all_competitor_data) > 0:
+    # Total spend per account across ALL transactions
+    _account_totals = (
+        combined_df.groupby('primary_account_num')
+        .agg(total_spend=('amount', 'sum'), total_txns=('amount', 'count'))
+        .reset_index()
+    )
+
+    competitor_spend_analysis = {}
+
+    for comp_name, grp in all_competitor_data.items():
+        acct_comp = (
+            grp.groupby('primary_account_num')
+            .agg(competitor_spend=('amount', 'sum'), competitor_txns=('amount', 'count'))
+            .reset_index()
+        )
+
+        merged = acct_comp.merge(_account_totals, on='primary_account_num', how='left')
+        merged['your_cu_spend'] = merged['total_spend'] - merged['competitor_spend']
+        merged['your_cu_txns'] = merged['total_txns'] - merged['competitor_txns']
+        merged['competitor_pct'] = (
+            merged['competitor_spend'] / merged['total_spend'] * 100
+        ).clip(0, 100)
+
+        merged['segment'] = pd.cut(
+            merged['competitor_pct'],
+            bins=SEGMENT_BINS,
+            labels=SEGMENT_LABELS,
+            include_lowest=True,
+        )
+
+        merged['competitor_name'] = comp_name
+        merged['competitor_category'] = grp['competitor_category'].iloc[0]
+        competitor_spend_analysis[comp_name] = merged
+
+    # Rank competitors by account count for deep-dive selection
+    _comp_sizes = {
+        name: len(df) for name, df in competitor_spend_analysis.items()
+    }
+    deep_dive_competitors = sorted(
+        _comp_sizes, key=_comp_sizes.get, reverse=True
+    )[:DEEP_DIVE_TOP_N]
+
+    # Summary
+    total_heavy = sum(
+        (df['segment'] == 'Competitor-Heavy').sum()
+        for df in competitor_spend_analysis.values()
+    )
+    total_balanced = sum(
+        (df['segment'] == 'Balanced').sum()
+        for df in competitor_spend_analysis.values()
+    )
+    total_cu = sum(
+        (df['segment'] == 'CU-Focused').sum()
+        for df in competitor_spend_analysis.values()
+    )
+
+    print(f"    Built spend segmentation for {len(competitor_spend_analysis)} competitors")
+    print(f"    Deep-dive charts will cover top {DEEP_DIVE_TOP_N}: {', '.join(deep_dive_competitors[:3])}...")
+    print(f"\n    Segment Totals (account-competitor pairs):")
+    print(f"      Competitor-Heavy (>50%):  {total_heavy:,}")
+    print(f"      Balanced (25-50%):        {total_balanced:,}")
+    print(f"      CU-Focused (<25%):        {total_cu:,}")
+
+else:
+    competitor_spend_analysis = {}
+    deep_dive_competitors = []
+    print("    No competitor data -- skipping spend segmentation")
