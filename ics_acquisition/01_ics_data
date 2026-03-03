@@ -5,6 +5,7 @@
 # ICS Account field = Yes/No (or Y/N) -- flags whether account is ICS.
 # Source field = REF (referral) or DM (direct mail) -- the acquisition channel.
 # Builds: ics_agg, ics_acct_map, ics_df, non_ics_df.
+# Uses DATASET_MONTHS from setup/09 for per-month normalization.
 
 # Values in 'ICS Account' that mean YES (case-insensitive)
 _ICS_YES = {'YES', 'Y'}
@@ -82,8 +83,10 @@ try:
         ics_agg = pd.DataFrame()
     else:
         # -----------------------------------------------------------------------
-        # Core ICS aggregation by channel
+        # Core ICS aggregation by channel (with time-normalized metrics)
         # -----------------------------------------------------------------------
+        _n_months = DATASET_MONTHS  # from setup/09
+
         ics_agg = ics_merged.groupby('ics_account').agg(
             txn_count=('transaction_date', 'count'),
             unique_accounts=('primary_account_num', 'nunique'),
@@ -98,6 +101,11 @@ try:
         ics_agg['txn_pct'] = ics_agg['txn_count'] / total_txns_ics * 100
         ics_agg['acct_pct'] = ics_agg['unique_accounts'] / total_accts_ics * 100
         ics_agg['txn_per_account'] = ics_agg['txn_count'] / ics_agg['unique_accounts']
+
+        # Time-normalized: per account per month
+        ics_agg['txns_per_acct_mo'] = ics_agg['txn_per_account'] / _n_months
+        ics_agg['spend_per_acct_mo'] = ics_agg['total_spend'] / ics_agg['unique_accounts'] / _n_months
+
         ics_agg = ics_agg.sort_values('txn_count', ascending=False).reset_index(drop=True)
 
         # -----------------------------------------------------------------------
@@ -115,9 +123,11 @@ try:
         # Conference-styled summary table
         # -----------------------------------------------------------------------
         ics_display = ics_agg[['ics_account', 'txn_count', 'txn_pct', 'unique_accounts',
-                                'acct_pct', 'total_spend', 'avg_spend', 'txn_per_account']].copy()
+                                'acct_pct', 'total_spend', 'avg_spend',
+                                'txns_per_acct_mo', 'spend_per_acct_mo']].copy()
         ics_display.columns = ['Channel', 'Transactions', 'Txn %', 'Accounts',
-                                'Acct %', 'Total Spend', 'Avg Ticket', 'Txns/Acct']
+                                'Acct %', 'Total Spend', 'Avg Ticket',
+                                'Txns/Acct/Mo', 'Spend/Acct/Mo']
 
         styled = (
             ics_display.style
@@ -129,7 +139,8 @@ try:
                 'Acct %': '{:.1f}%',
                 'Total Spend': '${:,.0f}',
                 'Avg Ticket': '${:.2f}',
-                'Txns/Acct': '{:.1f}',
+                'Txns/Acct/Mo': '{:.1f}',
+                'Spend/Acct/Mo': '${:,.0f}',
             })
             .set_properties(**{
                 'font-size': '13px', 'font-weight': 'bold',
@@ -149,7 +160,7 @@ try:
                     ('padding-bottom', '12px'),
                 ]},
             ])
-            .set_caption("ICS Acquisition Channel Summary")
+            .set_caption(f"ICS Acquisition Channel Summary  ({DATASET_LABEL}, {_n_months} months)")
             .bar(subset=['Transactions'], color=GEN_COLORS['info'], vmin=0)
         )
 
@@ -157,7 +168,8 @@ try:
 
         ics_total_accts = ics_agg[ics_agg['ics_account'] != 'Non-ICS']['unique_accounts'].sum()
         ics_total_pct = ics_agg[ics_agg['ics_account'] != 'Non-ICS']['acct_pct'].sum()
-        print(f"\n    ICS accounts: {ics_total_accts:,} ({ics_total_pct:.1f}% of all accounts)")
+        print(f"\n    Period: {DATASET_LABEL} ({_n_months} months)")
+        print(f"    ICS accounts: {ics_total_accts:,} ({ics_total_pct:.1f}% of all accounts)")
         print(f"    Channel breakdown: {dict(ics_values)}")
         print(f"    ICS avg ticket: ${ics_df['amount'].mean():.2f} vs Non-ICS: ${non_ics_df['amount'].mean():.2f}")
 

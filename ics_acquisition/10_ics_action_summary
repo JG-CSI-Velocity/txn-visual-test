@@ -2,6 +2,7 @@
 # ICS ACTION SUMMARY: Findings & Recommendations (Conference Edition)
 # ===========================================================================
 # Conference-styled findings table + strategic action items.
+# All rate metrics are per-month for time context.
 
 if 'ics_agg' not in dir() or len(ics_agg) == 0:
     print("    No ICS data available. Skipping action summary.")
@@ -9,6 +10,7 @@ else:
     findings_ics = []
 
     ics_only = ics_agg[ics_agg['ics_account'] != 'Non-ICS']
+    _n_months = DATASET_MONTHS
 
     # 1. ICS penetration
     ics_acct_pct = ics_only['acct_pct'].sum()
@@ -20,17 +22,20 @@ else:
         'Priority': 'High'
     })
 
-    # 2. Channel split
+    # 2. Channel activity (monthly-normalized)
     ref_row = ics_agg[ics_agg['ics_account'] == 'REF']
     dm_row = ics_agg[ics_agg['ics_account'] == 'DM']
     if len(ref_row) > 0 and len(dm_row) > 0:
-        ref_tpa = ref_row['txn_per_account'].values[0]
-        dm_tpa = dm_row['txn_per_account'].values[0]
-        better = 'REF' if ref_tpa > dm_tpa else 'DM'
+        ref_tpm = ref_row['txns_per_acct_mo'].values[0]
+        dm_tpm = dm_row['txns_per_acct_mo'].values[0]
+        ref_spm = ref_row['spend_per_acct_mo'].values[0]
+        dm_spm = dm_row['spend_per_acct_mo'].values[0]
+        better = 'REF' if ref_tpm > dm_tpm else 'DM'
         findings_ics.append({
-            'Category': 'Channel Quality',
-            'Finding': f"REF: {ref_tpa:.1f} txns/acct vs DM: {dm_tpa:.1f} txns/acct",
-            'Implication': f"{better} channel produces more active accounts",
+            'Category': 'Channel Activity',
+            'Finding': (f"REF: {ref_tpm:.1f} txns/acct/mo (${ref_spm:,.0f}/mo) vs "
+                        f"DM: {dm_tpm:.1f} txns/acct/mo (${dm_spm:,.0f}/mo)"),
+            'Implication': f"{better} channel produces more active accounts over {_n_months} months",
             'Priority': 'High'
         })
 
@@ -45,13 +50,15 @@ else:
             'Priority': 'Medium'
         })
 
-    # 4. Total ICS impact
+    # 4. Total ICS revenue impact (annualized)
     ics_total_spend = ics_only['total_spend'].sum()
     total_spend_all = ics_agg['total_spend'].sum()
     spend_pct = ics_total_spend / total_spend_all * 100 if total_spend_all > 0 else 0
+    annual_ics = ics_total_spend / _n_months * 12
     findings_ics.append({
         'Category': 'Revenue Impact',
-        'Finding': f"ICS accounts generate {spend_pct:.1f}% of total card spend",
+        'Finding': (f"ICS accounts generate {spend_pct:.1f}% of total card spend "
+                    f"(~${annual_ics:,.0f} annualized)"),
         'Implication': 'ICS acquisition directly impacts interchange revenue',
         'Priority': 'High' if spend_pct > 15 else 'Medium'
     })
@@ -91,7 +98,7 @@ else:
                 ('padding-bottom', '12px'),
             ]},
         ])
-        .set_caption("ICS Acquisition Analysis: Key Findings")
+        .set_caption(f"ICS Acquisition Analysis: Key Findings  ({DATASET_LABEL}, {_n_months} months)")
     )
 
     display(styled_findings_ics)
@@ -100,7 +107,7 @@ else:
     # Action items
     # ---------------------------------------------------------------------------
     actions_ics = [
-        "Compare REF vs DM cost-per-acquisition against lifetime card usage value",
+        "Compare REF vs DM cost-per-acquisition against monthly card usage value",
         "Develop channel-specific onboarding flows to maximize early card activation",
         "Create ICS-specific merchant reward partnerships based on channel preferences",
         "Track ICS account engagement tiers for 90-day post-acquisition retention signals",

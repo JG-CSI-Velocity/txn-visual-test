@@ -4,13 +4,8 @@
 # Merge Account Age, Date Opened, spend cols from rewards_df.
 # Compute first-txn date, days-to-first-txn (TTM only), spend tiers.
 
-# ---------------------------------------------------------------------------
-# Dataset date range (for labeling downstream)
-# ---------------------------------------------------------------------------
-DATASET_START = combined_df['transaction_date'].min()
-DATASET_END = combined_df['transaction_date'].max()
-DATASET_MONTHS = max(1, round((DATASET_END - DATASET_START).days / 30.44))
-DATASET_LABEL = f"{DATASET_START.strftime('%b %Y')}-{DATASET_END.strftime('%b %Y')}"
+# DATASET_START, DATASET_END, DATASET_MONTHS, DATASET_LABEL
+# are defined in setup/09-oddd-account-type (available to all folders).
 
 # ---------------------------------------------------------------------------
 # Merge account lifecycle fields from ODDD

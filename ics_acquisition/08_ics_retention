@@ -58,7 +58,8 @@ else:
     ax.set_title("Account Activity Rate by ICS Channel",
                  fontsize=26, fontweight='bold',
                  color=GEN_COLORS['dark_text'], pad=35, loc='left')
-    ax.text(0.0, 1.02, f"What % of each channel's accounts transacted in {most_recent}?",
+    ax.text(0.0, 1.02,
+            f"What % of each channel's accounts transacted in {most_recent}?  (over {DATASET_LABEL})",
             transform=ax.transAxes, fontsize=15,
             color=GEN_COLORS['muted'], style='italic')
 

@@ -2,6 +2,7 @@
 # ICS CHANNEL COMPARISON: REF vs DM vs Non-ICS (Conference Edition)
 # ===========================================================================
 # Grouped horizontal bar: key metrics by acquisition channel. (14,7).
+# All rate metrics normalized to per-month for time context.
 
 if 'ics_agg' not in dir() or len(ics_agg) == 0:
     print("    No ICS data available. Skipping channel comparison.")
@@ -21,8 +22,8 @@ else:
 
     metrics = [
         ('avg_spend', 'Avg Ticket ($)', '${:.2f}'),
-        ('txn_per_account', 'Txns per Account', '{:.1f}'),
-        ('acct_pct', '% of Accounts', '{:.1f}%'),
+        ('txns_per_acct_mo', 'Txns/Acct/Month', '{:.1f}'),
+        ('spend_per_acct_mo', 'Spend/Acct/Month ($)', '${:,.0f}'),
     ]
 
     for ax, (col, label, fmt) in zip(axes, metrics):
@@ -43,7 +44,8 @@ else:
     fig.suptitle("ICS Acquisition Channel Comparison",
                  fontsize=26, fontweight='bold',
                  color=GEN_COLORS['dark_text'], y=1.04)
-    fig.text(0.5, 0.96, "How do referral and direct mail accounts compare to non-ICS?",
+    fig.text(0.5, 0.96,
+             f"How do referral and direct mail accounts compare?  ({DATASET_LABEL}, {DATASET_MONTHS} mo)",
              ha='center', fontsize=13, color=GEN_COLORS['muted'], style='italic')
 
     plt.tight_layout()

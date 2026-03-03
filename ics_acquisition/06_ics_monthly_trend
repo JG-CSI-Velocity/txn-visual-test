@@ -43,7 +43,8 @@ else:
     ax.set_title("ICS Channel Transaction Trends",
                  fontsize=26, fontweight='bold',
                  color=GEN_COLORS['dark_text'], pad=35, loc='left')
-    ax.text(0.0, 1.02, "Are ICS account transaction shares growing or declining?",
+    ax.text(0.0, 1.02,
+            f"Are ICS account transaction shares growing or declining?  ({DATASET_LABEL})",
             transform=ax.transAxes, fontsize=15,
             color=GEN_COLORS['muted'], style='italic')
 

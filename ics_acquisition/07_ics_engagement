@@ -55,7 +55,8 @@ else:
         ax.set_title("Engagement Distribution by ICS Channel",
                      fontsize=26, fontweight='bold',
                      color=GEN_COLORS['dark_text'], pad=35, loc='left')
-        ax.text(0.0, 1.02, "Are ICS-sourced accounts more or less engaged than non-ICS?",
+        ax.text(0.0, 1.02,
+                f"Are ICS-sourced accounts more or less engaged than non-ICS?  ({DATASET_LABEL})",
                 transform=ax.transAxes, fontsize=15,
                 color=GEN_COLORS['muted'], style='italic')
 

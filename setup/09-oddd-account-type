@@ -56,12 +56,21 @@ combined_df['transaction_date'] = pd.to_datetime(combined_df['transaction_date']
 business_df['transaction_date'] = pd.to_datetime(business_df['transaction_date'])
 personal_df['transaction_date'] = pd.to_datetime(personal_df['transaction_date'])
 
+# ---------------------------------------------------------------------------
+# Dataset date range constants (available to ALL downstream folders)
+# ---------------------------------------------------------------------------
+DATASET_START  = combined_df['transaction_date'].min()
+DATASET_END    = combined_df['transaction_date'].max()
+DATASET_MONTHS = max(1, round((DATASET_END - DATASET_START).days / 30.44))
+DATASET_LABEL  = f"{DATASET_START.strftime('%b %Y')}-{DATASET_END.strftime('%b %Y')}"
+print(f"\nDataset period: {DATASET_LABEL} ({DATASET_MONTHS} months)")
+
 # Create year_month column in all dataframes
 if 'year_month' not in combined_df.columns:
     combined_df['year_month'] = combined_df['transaction_date'].dt.to_period('M')
     business_df['year_month'] = business_df['transaction_date'].dt.to_period('M')
     personal_df['year_month'] = personal_df['transaction_date'].dt.to_period('M')
-    print(f"\nCreated year_month column for time-based analysis")
+    print(f"Created year_month column for time-based analysis")
 
 # ===========================================================================
 # FINAL VERIFICATION

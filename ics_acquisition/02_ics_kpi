@@ -1,7 +1,7 @@
 # ===========================================================================
 # ICS KPI DASHBOARD: Key Metrics at a Glance (Conference Edition)
 # ===========================================================================
-# 4 FancyBboxPatch cards. (18,5).
+# 4 FancyBboxPatch cards. (18,5). Uses DATASET_LABEL for period context.
 
 if 'ics_agg' not in dir() or len(ics_agg) == 0:
     print("    No ICS data available. Skipping KPI dashboard.")
@@ -9,29 +9,30 @@ else:
     ics_only = ics_agg[ics_agg['ics_account'] != 'Non-ICS']
     ics_acct_total = ics_only['unique_accounts'].sum()
     ics_acct_pct = ics_only['acct_pct'].sum()
-    ics_txn_pct = ics_only['txn_pct'].sum()
 
     ref_row = ics_agg[ics_agg['ics_account'] == 'REF']
     dm_row = ics_agg[ics_agg['ics_account'] == 'DM']
-    ref_accts = int(ref_row['unique_accounts'].values[0]) if len(ref_row) > 0 else 0
-    dm_accts = int(dm_row['unique_accounts'].values[0]) if len(dm_row) > 0 else 0
+    ref_tpm = ref_row['txns_per_acct_mo'].values[0] if len(ref_row) > 0 else 0
+    dm_tpm = dm_row['txns_per_acct_mo'].values[0] if len(dm_row) > 0 else 0
 
     ics_avg = ics_df['amount'].mean() if len(ics_df) > 0 else 0
     non_ics_avg = non_ics_df['amount'].mean() if len(non_ics_df) > 0 else 0
+
+    ics_spend_mo = ics_only['spend_per_acct_mo'].mean() if len(ics_only) > 0 else 0
 
     fig, axes = plt.subplots(1, 4, figsize=(18, 5))
 
     kpi_data = [
         {
             'label': 'ICS Accounts',
-            'value': f"{ics_acct_pct:.1f}%",
-            'sub': f"{ics_acct_total:,} total ICS accounts",
+            'value': f"{ics_acct_total:,}",
+            'sub': f"{ics_acct_pct:.1f}% of all accounts",
             'color': GEN_COLORS['info'],
         },
         {
-            'label': 'REF vs DM',
-            'value': f"{ref_accts:,} / {dm_accts:,}",
-            'sub': 'referral / direct mail accounts',
+            'label': 'REF vs DM Activity',
+            'value': f"{ref_tpm:.1f} / {dm_tpm:.1f}",
+            'sub': 'txns per account per month',
             'color': GEN_COLORS['primary'],
         },
         {
@@ -41,9 +42,9 @@ else:
             'color': GEN_COLORS['success'],
         },
         {
-            'label': 'ICS Txn Share',
-            'value': f"{ics_txn_pct:.1f}%",
-            'sub': 'of all transactions',
+            'label': 'ICS Spend/Acct/Mo',
+            'value': f"${ics_spend_mo:,.0f}",
+            'sub': 'monthly card spend per ICS account',
             'color': GEN_COLORS['warning'],
         },
     ]
@@ -74,6 +75,8 @@ else:
     fig.suptitle("ICS Account Acquisition Overview",
                  fontsize=28, fontweight='bold',
                  color=GEN_COLORS['dark_text'], y=1.04)
+    fig.text(0.5, 0.97, f"{DATASET_LABEL}  ({DATASET_MONTHS} months)",
+             ha='center', fontsize=13, color=GEN_COLORS['muted'], style='italic')
 
     plt.tight_layout()
     plt.show()
