@@ -47,15 +47,23 @@ if len(box_data) > 0 and any(len(d) > 0 for d in box_data):
     ax.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
     ax.set_axisbelow(True)
 
-    # Per-band median labels
+    # Per-band stats -- positioned above each box with white background
     for i, band in enumerate(bands_present):
         band_data = ttf_data[ttf_data['acct_age_band'] == band]['days_to_first_txn']
         if len(band_data) > 0:
             med = band_data.median()
             n = len(band_data)
-            ax.text(i + 1, med, f"  med: {med:.0f}d\n  n={n:,}",
-                    fontsize=11, fontweight='bold', color=ACCT_AGE_PALETTE.get(band, GEN_COLORS['muted']),
-                    va='center', ha='left')
+            pct_30 = (band_data <= 30).sum() / len(band_data) * 100
+            # Place label above the upper whisker
+            upper_whisker = bp['whiskers'][i * 2 + 1].get_ydata().max()
+            ax.text(i + 1, upper_whisker + (ax.get_ylim()[1] * 0.03),
+                    f"Median: {med:.0f}d\n{pct_30:.0f}% < 30d\nn = {n:,}",
+                    fontsize=12, fontweight='bold',
+                    color=GEN_COLORS['dark_text'],
+                    ha='center', va='bottom',
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+                              edgecolor=ACCT_AGE_PALETTE.get(band, GEN_COLORS['muted']),
+                              linewidth=1.5, alpha=0.95))
 
     # Overall TTM callout
     overall_median = ttf_data['days_to_first_txn'].median()
@@ -63,12 +71,27 @@ if len(box_data) > 0 and any(len(d) > 0 for d in box_data):
 
     ax.text(
         0.99, 0.95,
-        f"TTM Median: {overall_median:.0f} days | {pct_within_30:.0f}% activated within 30 days",
+        f"All TTM: Median {overall_median:.0f} days | {pct_within_30:.0f}% within 30 days",
         transform=ax.transAxes,
         fontsize=15, fontweight='bold', color=GEN_COLORS['info'],
         ha='right', va='top',
         bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
                   edgecolor=GEN_COLORS['info'], alpha=0.9)
+    )
+
+    # Legend for box colors
+    legend_handles = [
+        plt.Rectangle((0, 0), 1, 1,
+                       fc=ACCT_AGE_PALETTE.get(b, GEN_COLORS['muted']),
+                       edgecolor='white', linewidth=1.5, alpha=0.85,
+                       label=f"{b} ({len(ttf_data[ttf_data['acct_age_band'] == b]):,} accounts)")
+        for b in bands_present
+    ]
+    ax.legend(
+        handles=legend_handles,
+        loc='upper center', bbox_to_anchor=(0.5, -0.10),
+        ncol=3, fontsize=13, frameon=False,
+        title='Account Age Band', title_fontproperties={'weight': 'bold', 'size': 14}
     )
 
 ax.set_title("How Quickly Do New Accounts Activate?",
@@ -79,4 +102,5 @@ ax.text(0.0, 0.97, "Trailing 12 months only -- older accounts lack historical tr
         color=GEN_COLORS['muted'], style='italic')
 
 plt.tight_layout()
+plt.subplots_adjust(bottom=0.14)
 plt.show()
