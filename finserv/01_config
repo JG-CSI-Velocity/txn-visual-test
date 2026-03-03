@@ -120,8 +120,27 @@ FINANCIAL_SERVICES_PATTERNS = {
     ]
 }
 
-print(f"Financial services patterns configured: {len(FINANCIAL_SERVICES_PATTERNS)} categories")
-total_patterns = sum(len(p) for p in FINANCIAL_SERVICES_PATTERNS.values())
-print(f"Total merchant patterns: {total_patterns}")
+import pandas as pd
+
+config_rows = []
 for category, patterns in FINANCIAL_SERVICES_PATTERNS.items():
-    print(f"  {category}: {len(patterns)} patterns")
+    # Show first 5 patterns as sample, truncate the rest
+    sample = ', '.join(patterns[:5])
+    if len(patterns) > 5:
+        sample += f' ... (+{len(patterns) - 5} more)'
+    config_rows.append({
+        'Category': category,
+        'Patterns': len(patterns),
+        'Sample Merchants': sample
+    })
+
+config_df = pd.DataFrame(config_rows)
+total_patterns = config_df['Patterns'].sum()
+
+print(f"Financial Services Detection Config: {len(config_df)} categories, {total_patterns} total patterns\n")
+display(config_df.style.hide(axis='index').set_properties(**{
+    'text-align': 'left',
+    'font-weight': 'bold'
+}, subset=['Category']).set_properties(**{
+    'text-align': 'center'
+}, subset=['Patterns']))
