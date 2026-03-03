@@ -1,7 +1,7 @@
 # ===========================================================================
-# BRACKET DATA: Spending Bins + Monthly Crosstab
+# BRACKET DATA: Spending Bins + Monthly Crosstab (Conference Edition)
 # ===========================================================================
-# Pure data. No display. 8 bins, counts/pcts/accounts per bracket.
+# 8 bins, counts/pcts/accounts per bracket. Styled summary output.
 
 # Define spending brackets
 BRACKET_BINS = [0, 1, 5, 10, 25, 50, 100, 500, float('inf')]
@@ -43,9 +43,49 @@ monthly_bracket_pct = pd.crosstab(
     combined_df['year_month'], combined_df['amount_bracket'], normalize='index'
 ) * 100
 
-print("Bracket data built.")
-print(f"  Bins: {len(BRACKET_LABELS)}")
-print(f"  Total transactions bucketed: {bracket_df['txn_count'].sum():,}")
-for _, row in bracket_df.iterrows():
-    print(f"    {row['bracket']:>10s}: {row['txn_count']:>8,} txns ({row['txn_pct']:.1f}%), "
-          f"{row['account_count']:>6,} accounts ({row['acct_pct']:.1f}%)")
+# ---------------------------------------------------------------------------
+# Conference-styled bracket summary
+# ---------------------------------------------------------------------------
+bracket_display = bracket_df.copy()
+bracket_display.columns = ['Bracket', 'Transactions', 'Trans %', 'Accounts', 'Acct %']
+
+styled = (
+    bracket_display.style
+    .hide(axis='index')
+    .format({
+        'Transactions': '{:,.0f}',
+        'Trans %': '{:.1f}%',
+        'Accounts': '{:,.0f}',
+        'Acct %': '{:.1f}%',
+    })
+    .set_properties(**{
+        'font-size': '15px',
+        'font-weight': 'bold',
+        'text-align': 'center',
+        'border': '1px solid #E9ECEF',
+        'padding': '10px 14px',
+    })
+    .set_table_styles([
+        {'selector': 'th', 'props': [
+            ('background-color', GEN_COLORS['primary']),
+            ('color', 'white'),
+            ('font-size', '16px'),
+            ('font-weight', 'bold'),
+            ('text-align', 'center'),
+            ('padding', '10px 14px'),
+        ]},
+        {'selector': 'caption', 'props': [
+            ('font-size', '22px'),
+            ('font-weight', 'bold'),
+            ('color', GEN_COLORS['dark_text']),
+            ('text-align', 'left'),
+            ('padding-bottom', '12px'),
+        ]},
+    ])
+    .set_caption("Spending Bracket Summary")
+    .bar(subset=['Transactions'], color=GEN_COLORS['info'], vmin=0)
+)
+
+display(styled)
+
+print(f"\n    {len(BRACKET_LABELS)} brackets | {bracket_df['txn_count'].sum():,} total transactions bucketed")
