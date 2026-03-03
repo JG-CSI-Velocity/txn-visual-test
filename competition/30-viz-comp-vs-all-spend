@@ -1,0 +1,37 @@
+# ===========================================================================
+# CELL 10: VISUALIZATION - Competitor vs Other Spend
+# ===========================================================================
+"""
+## Competitor Analysis - Spend Comparison Chart
+"""
+
+for competitor, comparison in competitor_spend_analysis.items():
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    # Get top 20 by total spend
+    top_20 = comparison.head(20).sort_values('Total_Spend')
+    
+    # Create stacked bar chart
+    bars1 = ax.barh(range(len(top_20)), top_20['Other_Spend'], 
+                    label='Other Spend', color='#4ECDC4')
+    bars2 = ax.barh(range(len(top_20)), top_20['Competitor_Spend'], 
+                    left=top_20['Other_Spend'], label='Competitor Spend', color='#FF6B6B')
+    
+    ax.set_yticks(range(len(top_20)))
+    ax.set_yticklabels([f"Account {i+1}" for i in range(len(top_20))])
+    ax.set_xlabel('Total Spend ($)', fontsize=12)
+    ax.set_title(f'Top 20 Accounts: Competitor vs Other Spend - {competitor}', 
+                 fontsize=14, fontweight='bold')
+    ax.legend(loc='lower right')
+    ax.grid(axis='x', alpha=0.3)
+    
+    # Add total value labels
+    for i, (idx, row) in enumerate(top_20.iterrows()):
+        total = row['Total_Spend']
+        comp_pct = row['Competitor_Pct']
+        ax.text(total, i, f' ${total:,.0f} ({comp_pct:.0f}%)', 
+                va='center', fontsize=9)
+    
+    plt.tight_layout()
+    plt.show()
+
