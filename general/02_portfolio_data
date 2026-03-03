@@ -1,26 +1,30 @@
 # ===========================================================================
 # PORTFOLIO DATA: Build monthly_summary and portfolio_kpis
 # ===========================================================================
-# Pure data. No display, no dollars. All downstream cells depend on this.
+# All downstream cells depend on this. Conference-styled summary output.
 
 # Ensure year_month exists
 if 'year_month' not in combined_df.columns:
     combined_df['year_month'] = combined_df['transaction_date'].dt.to_period('M')
 
 # ---------------------------------------------------------------------------
-# Monthly summary: counts only, no dollars
+# Monthly summary
 # ---------------------------------------------------------------------------
 monthly_summary = combined_df.groupby('year_month').agg(
     txn_count=('transaction_date', 'count'),
     unique_accounts=('primary_account_num', 'nunique'),
     unique_merchants=('merchant_consolidated', 'nunique'),
     unique_mcc=('mcc_code', 'nunique'),
+    total_spend=('amount', 'sum'),
+    avg_spend=('amount', 'mean'),
+    median_spend=('amount', 'median'),
 ).sort_index()
 
 # Month-over-month growth (percentages)
 monthly_summary['txn_growth'] = monthly_summary['txn_count'].pct_change() * 100
 monthly_summary['acct_growth'] = monthly_summary['unique_accounts'].pct_change() * 100
 monthly_summary['merchant_growth'] = monthly_summary['unique_merchants'].pct_change() * 100
+monthly_summary['spend_growth'] = monthly_summary['total_spend'].pct_change() * 100
 
 # Rolling averages (3-month window)
 monthly_summary['txn_rolling'] = monthly_summary['txn_count'].rolling(3, min_periods=1).mean()
@@ -54,10 +58,48 @@ portfolio_kpis = {
     'latest_acct_growth': latest_acct_growth,
 }
 
-print("Portfolio data built.")
-print(f"  Months: {total_months}")
-print(f"  Transactions: {total_txns:,}")
-print(f"  Accounts: {total_accounts:,}")
-print(f"  Merchants: {total_merchants:,}")
-print(f"  Avg monthly txns: {avg_monthly_txns:,.0f}")
-print(f"  Avg txns/account: {avg_txn_per_account:.1f}")
+# ---------------------------------------------------------------------------
+# Conference-styled summary
+# ---------------------------------------------------------------------------
+kpi_display = pd.DataFrame([
+    {'Metric': 'Total Months', 'Value': f"{total_months}"},
+    {'Metric': 'Total Transactions', 'Value': f"{total_txns:,}"},
+    {'Metric': 'Unique Accounts', 'Value': f"{total_accounts:,}"},
+    {'Metric': 'Unique Merchants', 'Value': f"{total_merchants:,}"},
+    {'Metric': 'Avg Monthly Transactions', 'Value': f"{avg_monthly_txns:,.0f}"},
+    {'Metric': 'Avg Transactions / Account', 'Value': f"{avg_txn_per_account:.1f}"},
+    {'Metric': 'Latest MoM Txn Growth', 'Value': f"{latest_txn_growth:+.1f}%"},
+    {'Metric': 'Latest MoM Acct Growth', 'Value': f"{latest_acct_growth:+.1f}%"},
+])
+
+styled = (
+    kpi_display.style
+    .hide(axis='index')
+    .set_properties(**{
+        'font-size': '15px',
+        'font-weight': 'bold',
+        'text-align': 'left',
+        'border': '1px solid #E9ECEF',
+        'padding': '10px 16px',
+    })
+    .set_table_styles([
+        {'selector': 'th', 'props': [
+            ('background-color', GEN_COLORS['primary']),
+            ('color', 'white'),
+            ('font-size', '16px'),
+            ('font-weight', 'bold'),
+            ('text-align', 'left'),
+            ('padding', '10px 16px'),
+        ]},
+        {'selector': 'caption', 'props': [
+            ('font-size', '22px'),
+            ('font-weight', 'bold'),
+            ('color', GEN_COLORS['dark_text']),
+            ('text-align', 'left'),
+            ('padding-bottom', '12px'),
+        ]},
+    ])
+    .set_caption("Portfolio Data Pipeline")
+)
+
+display(styled)
