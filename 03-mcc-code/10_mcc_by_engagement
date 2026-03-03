@@ -27,20 +27,28 @@ else:
             normalize='columns'
         ) * 100
 
-        # Ensure tier order
-        mcc_engage_ct = mcc_engage_ct[[t for t in ENGAGE_ORDER if t in mcc_engage_ct.columns]]
+        # Ensure tier order (match case-insensitively)
+        _ct_col_map = {c.strip().title(): c for c in mcc_engage_ct.columns}
+        _ordered_cols = [_ct_col_map[t] for t in ENGAGE_ORDER if t in _ct_col_map]
+        if len(_ordered_cols) == 0:
+            # Fallback: use whatever columns exist
+            _ordered_cols = list(mcc_engage_ct.columns)
+        mcc_engage_ct = mcc_engage_ct[_ordered_cols]
 
-        if mcc_engage_ct.empty or mcc_engage_ct.shape[0] == 0 or mcc_engage_ct.shape[1] == 0:
+        # Sort by first tier share descending
+        if 'Power' in mcc_engage_ct.columns:
+            mcc_engage_ct = mcc_engage_ct.sort_values('Power', ascending=True)
+        elif len(mcc_engage_ct.columns) > 0:
+            mcc_engage_ct = mcc_engage_ct.sort_values(mcc_engage_ct.columns[0], ascending=True)
+
+        n_tiers = len(mcc_engage_ct.columns)
+        n_mcc = len(mcc_engage_ct)
+
+        if n_tiers == 0 or n_mcc == 0:
             print("    Empty MCC x engagement cross-tab. Skipping chart.")
         else:
-            # Sort by Power tier share descending
-            if 'Power' in mcc_engage_ct.columns:
-                mcc_engage_ct = mcc_engage_ct.sort_values('Power', ascending=True)
-
             fig, ax = plt.subplots(figsize=(14, 7))
 
-            n_tiers = len(mcc_engage_ct.columns)
-            n_mcc = len(mcc_engage_ct)
             bar_height = 0.8 / n_tiers
             y_base = np.arange(n_mcc)
 
