@@ -27,18 +27,17 @@ if 'personal_df' in dir() and len(personal_df) > 0:
     personal_df = tag_competitors(personal_df, merchant_col='merchant_consolidated')
 
 print(f"\nSearched {len(combined_df):,} transactions")
-print(f"✓ Competitor transactions found: {len(competitor_txns):,}")
-print(f"✓ Unique patterns matched: {competitor_txns['competitor_match'].nunique()}")
-print(f"✓ Categories with activity: {competitor_txns['competitor_category'].nunique()}")
+print(f"  Competitor transactions found: {len(competitor_txns):,}")
+print(f"  Unique patterns matched: {competitor_txns['competitor_match'].nunique()}")
+print(f"  Categories with activity: {competitor_txns['competitor_category'].nunique()}")
 
 # Summary by category
 print(f"\nBy category:")
 cat_summary = competitor_txns.groupby('competitor_category').agg(
     transactions=('amount', 'count'),
-    spend=('amount', 'sum'),
     accounts=('primary_account_num', 'nunique')
 )
 for cat, row in cat_summary.iterrows():
-    print(f"  • {cat.replace('_', ' ').title():20s} {row['transactions']:>8,} txns  ${row['spend']:>12,.2f}  ({row['accounts']:,} accounts)")
+    print(f"  {cat.replace('_', ' ').title():20s} {row['transactions']:>8,} txns  ({row['accounts']:,} accounts)")
 
 print("="*120)

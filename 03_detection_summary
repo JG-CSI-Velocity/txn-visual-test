@@ -19,10 +19,12 @@ else:
     total_spend = combined_df['amount'].sum()
     total_accounts = combined_df['primary_account_num'].nunique()
 
+    pct_comp_txns = total_comp_txns / len(combined_df) * 100 if len(combined_df) > 0 else 0
+    pct_comp_accounts = total_comp_accounts / total_accounts * 100 if total_accounts > 0 else 0
+
     print(f"\nSearched {len(combined_df):,} transactions")
-    print(f"  Competitor transactions: {total_comp_txns:,}")
-    print(f"  Competitor spend:        ${total_comp_spend:,.2f} ({total_comp_spend / total_spend * 100:.1f}% of total)")
-    print(f"  Unique accounts:         {total_comp_accounts:,} ({total_comp_accounts / total_accounts * 100:.1f}% of {total_accounts:,})")
+    print(f"  Competitor transactions: {total_comp_txns:,} ({pct_comp_txns:.1f}% of total)")
+    print(f"  Unique accounts:         {total_comp_accounts:,} ({pct_comp_accounts:.1f}% of {total_accounts:,})")
     print(f"  Unique patterns matched: {competitor_txns['competitor_match'].nunique()}")
 
     # Category breakdown
@@ -31,37 +33,36 @@ else:
         competitor_txns.groupby('competitor_category')
         .agg(
             transactions=('amount', 'count'),
-            spend=('amount', 'sum'),
             accounts=('primary_account_num', 'nunique'),
         )
-        .sort_values('spend', ascending=False)
+        .sort_values('transactions', ascending=False)
     )
     for cat, row in cat_summary.iterrows():
         label = cat.replace('_', ' ').title()
-        print(f"  {label:20s} {row['transactions']:>8,} txns  ${row['spend']:>14,.2f}  ({row['accounts']:,} accounts)")
+        print(f"  {label:20s} {row['transactions']:>8,} txns  ({row['accounts']:,} accounts)")
 
     # True competitors vs payment ecosystems
-    true_spend = competitor_txns[competitor_txns['competitor_category'].isin(TRUE_COMPETITORS)]['amount'].sum()
-    eco_spend = competitor_txns[competitor_txns['competitor_category'].isin(PAYMENT_ECOSYSTEMS)]['amount'].sum()
-    print(f"\n  True competitor spend:   ${true_spend:>14,.2f}")
-    print(f"  Payment ecosystem spend: ${eco_spend:>14,.2f}")
+    true_txns = len(competitor_txns[competitor_txns['competitor_category'].isin(TRUE_COMPETITORS)])
+    eco_txns = len(competitor_txns[competitor_txns['competitor_category'].isin(PAYMENT_ECOSYSTEMS)])
+    print(f"\n  True competitor txns:    {true_txns:>10,}")
+    print(f"  Payment ecosystem txns:  {eco_txns:>10,}")
 
-    # Top 10 competitors by spend
+    # Top 10 competitors by transaction count
     merch_col = 'merchant_consolidated'
     top10 = (
         competitor_txns.groupby(merch_col)
         .agg(
-            spend=('amount', 'sum'),
             txns=('amount', 'count'),
+            accounts=('primary_account_num', 'nunique'),
             category=('competitor_category', 'first'),
         )
-        .sort_values('spend', ascending=False)
+        .sort_values('txns', ascending=False)
         .head(10)
     )
     print(f"\nTop 10 Competitors:")
     for merchant, row in top10.iterrows():
         label = row['category'].replace('_', ' ').title()
-        print(f"  {merchant:40s} ${row['spend']:>12,.2f}  {row['txns']:>6,} txns  [{label}]")
+        print(f"  {merchant:40s} {row['txns']:>6,} txns  {row['accounts']:>5,} accts  [{label}]")
 
     # Unmatched financial discovery
     print(f"\n{'=' * 120}")

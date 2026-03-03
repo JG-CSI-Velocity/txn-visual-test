@@ -156,32 +156,12 @@ if len(all_competitor_data) > 0:
         # Rename normalized_bank back to competitor for display
         rolled_df = rolled_df.rename(columns={'normalized_bank': 'competitor'})
 
-        # Take Top 15 by threat_score
+        # Top 15 by threat_score
         threat_df = rolled_df.sort_values('threat_score', ascending=False).head(15)
-
-        # -------------------------------------------------------------------
-        # Format for display
-        # -------------------------------------------------------------------
-        display_df = threat_df.copy()
-        display_df['category'] = display_df['category'].str.replace('_', ' ').str.title()
-        display_df = display_df.drop(columns=['total_spend'])
-        display_df['unique_accounts'] = display_df['unique_accounts'].apply(lambda x: f"{x:,}")
-        display_df['penetration_pct'] = display_df['penetration_pct'].apply(lambda x: f"{x:.2f}%")
-        display_df['growth_rate'] = display_df['growth_rate'].apply(lambda x: f"{x:+.1f}%")
-        display_df['threat_score'] = display_df['threat_score'].apply(lambda x: f"{x:.1f}")
-        display_df = display_df.drop(columns=['growth_weighted'], errors='ignore')
-        display_df.columns = [
-            'Bank', 'Category', 'Accounts',
-            'Penetration', 'Growth (6mo)', 'Threat Score'
-        ]
-
-        print("\nTop 15 Bank Competitive Threats:")
-        print("Threat Score = 40% Penetration + 30% Total Spend + 30% Growth Rate")
-        print("(Excludes wallets/P2P/BNPL - those are threats to banking itself, not direct competitors)\n")
-        display(display_df.style.hide(axis='index'))
-
-        print("\nHighest threat = High account penetration + High activity + Growing momentum")
+        print(f"Threat data built: {len(threat_df)} bank competitors scored")
     else:
-        print("\nNo bank competitors found in dataset")
-
-print("=" * 120)
+        threat_df = pd.DataFrame()
+        print("No bank competitors found in dataset")
+else:
+    threat_df = pd.DataFrame()
+    print("No competitor data available for threat assessment")
