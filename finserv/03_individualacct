@@ -1,0 +1,80 @@
+# ===========================================================================
+# CELL 3: ACCOUNT-LEVEL SUMMARY BY CATEGORY
+# ===========================================================================
+"""
+## Financial Services Opportunity - Account Analysis
+"""
+
+all_financial_accounts = {}
+
+for category, data in financial_services_data.items():
+    print(f"\n{'='*100}")
+    print(f"ACCOUNT ANALYSIS: {category}")
+    print(f"{'='*100}\n")
+    
+    category_trans = data['transactions']
+    
+    # Account-level summary
+    account_summary = category_trans.groupby('primary_account_num').agg({
+        'amount': ['sum', 'count', 'mean'],
+        'transaction_date': ['min', 'max'],
+        'merchant_name': lambda x: ' | '.join(x.unique()[:3])
+    }).round(2)
+    
+    account_summary.columns = [
+        'Total Spend',
+        'Transaction Count',
+        'Avg Transaction',
+        'First Transaction',
+        'Last Transaction',
+        'Merchants'
+    ]
+    
+    account_summary = account_summary.sort_values('Total Spend', ascending=False)
+    
+    # Add recency
+    account_summary['Recency (Days)'] = (
+        pd.Timestamp.now() - account_summary['Last Transaction']
+    ).dt.days
+    
+    # Display top 20
+    display_summary = account_summary.head(20).copy()
+    display_summary['Total Spend'] = display_summary['Total Spend'].apply(lambda x: f"${x:,.2f}")
+    display_summary['Avg Transaction'] = display_summary['Avg Transaction'].apply(lambda x: f"${x:,.2f}")
+    display_summary['First Transaction'] = display_summary['First Transaction'].dt.strftime('%Y-%m-%d')
+    display_summary['Last Transaction'] = display_summary['Last Transaction'].dt.strftime('%Y-%m-%d')
+    
+    print(f"Top 20 Accounts by Spend:")
+    display(display_summary[['Total Spend', 'Transaction Count', 'Avg Transaction', 
+                            'Last Transaction', 'Recency (Days)', 'Merchants']])
+    
+    # Summary stats
+    stats = pd.DataFrame({
+        'Metric': [
+            'Total Accounts',
+            'High Value (>$10k)',
+            'Medium Value ($1k-$10k)',
+            'Lower Value (<$1k)',
+            '',
+            'Active (last 30 days)',
+            'Active (last 90 days)',
+            'Inactive (90+ days)'
+        ],
+        'Count': [
+            len(account_summary),
+            len(account_summary[account_summary['Total Spend'] > 10000]),
+            len(account_summary[(account_summary['Total Spend'] >= 1000) & (account_summary['Total Spend'] <= 10000)]),
+            len(account_summary[account_summary['Total Spend'] < 1000]),
+            '',
+            len(account_summary[account_summary['Recency (Days)'] <= 30]),
+            len(account_summary[account_summary['Recency (Days)'] <= 90]),
+            len(account_summary[account_summary['Recency (Days)'] > 90])
+        ]
+    })
+    
+    print(f"\nAccount Segmentation:")
+    display(stats)
+    
+    # Store for export
+    all_financial_accounts[category] = account_summary
+
