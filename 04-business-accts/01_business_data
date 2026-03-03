@@ -34,6 +34,10 @@ else:
         biz_top20 = biz_agg.head(20).copy()
         biz_top50 = biz_agg.head(50).copy()
 
+        # Concentration metrics (computed early so downstream cells can use them)
+        top5_share_biz = biz_agg.head(5)['txn_pct'].sum()
+        top10_share_biz = biz_agg.head(10)['txn_pct'].sum()
+
         # -------------------------------------------------------------------
         # Monthly merchant trend (top 10 business merchants)
         # -------------------------------------------------------------------
@@ -151,8 +155,6 @@ else:
 
         display(styled)
 
-        top5_share_biz = biz_agg.head(5)['txn_pct'].sum()
-        top10_share_biz = biz_agg.head(10)['txn_pct'].sum()
         print(f"\n    {len(biz_agg)} business merchants")
         print(f"    Top 5 = {top5_share_biz:.1f}% of business transactions")
         print(f"    Top 10 = {top10_share_biz:.1f}% of business transactions")

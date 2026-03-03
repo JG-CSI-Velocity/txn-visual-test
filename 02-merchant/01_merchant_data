@@ -77,17 +77,18 @@ if len(consistency_df) > 0:
 # Merchant cohort (new / returning / lost per month)
 # ---------------------------------------------------------------------------
 sorted_months_m = sorted(combined_df['year_month'].unique())
-first_month_map = combined_df.groupby('merchant_consolidated')['year_month'].min()
-monthly_sets = {m: set(combined_df[combined_df['year_month'] == m]['merchant_consolidated'].unique())
+_merch_valid = combined_df[combined_df['merchant_consolidated'].notna()]
+first_month_map = _merch_valid.groupby('merchant_consolidated')['year_month'].min()
+monthly_sets = {m: set(_merch_valid[_merch_valid['year_month'] == m]['merchant_consolidated'].unique())
                 for m in sorted_months_m}
 
 cohort_rows = []
 for i, month in enumerate(sorted_months_m):
     current = monthly_sets[month]
-    new_m = {m for m in current if first_month_map[m] == month}
+    new_m = {m for m in current if m in first_month_map.index and first_month_map[m] == month}
     if i > 0:
         prev = monthly_sets[sorted_months_m[i - 1]]
-        returning = {m for m in current if m not in prev and first_month_map[m] != month}
+        returning = {m for m in current if m not in prev and m in first_month_map.index and first_month_map[m] != month}
         lost = prev - current
     else:
         returning = set()
