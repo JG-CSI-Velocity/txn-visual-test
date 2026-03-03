@@ -1,124 +1,148 @@
 # ===========================================================================
-# CELL 9: TOTAL SPEND vs COMPETITOR SPEND ANALYSIS
+# CELL 17: COMPETITOR ENGAGEMENT DEPTH
 # ===========================================================================
-"""
-## Competitor Analysis - Total Spend vs Competitor Spend
-"""
+# For members using each competitor: what share of their total transactions
+# goes to that competitor? Segments users into Heavy / Moderate / Light.
+# Uses transaction counts only (no dollar figures).
 
-competitor_spend_analysis = {}
+# --- Build per-account competitor share data ---
+engagement_rows = []
 
 for competitor, competitor_trans in all_competitor_data.items():
-    print(f"\n{'='*100}")
-    print(f"SPEND ANALYSIS: {competitor}")
-    print(f"{'='*100}\n")
-    
-    # Get list of accounts with competitor transactions
-    competitor_accounts = competitor_trans['primary_account_num'].unique()
-    
-    # Get ALL transactions for these accounts
-    all_spend_for_accounts = combined_df[
-        combined_df['primary_account_num'].isin(competitor_accounts)
-    ].copy()
-    
-    # Calculate total spend by account
-    total_spend_summary = all_spend_for_accounts.groupby('primary_account_num').agg({
-        'amount': ['sum', 'count'],
-        'transaction_date': ['min', 'max']
-    }).round(2)
-    
-    total_spend_summary.columns = ['total_spend', 'total_transactions', 'first_date', 'last_date']
-    
-    # Get competitor spend by account (from our earlier analysis)
-    account_summary = all_account_summaries[competitor]
-    
-    # Merge to compare
-    comparison = pd.DataFrame({
-        'Total_Spend': total_spend_summary['total_spend'],
-        'Total_Transactions': total_spend_summary['total_transactions'],
-        'Competitor_Spend': account_summary['Total Amount'],
-        'Competitor_Transactions': account_summary['Transaction Count']
-    })
-    
-    # Calculate other (non-competitor) spend
-    comparison['Other_Spend'] = comparison['Total_Spend'] - comparison['Competitor_Spend']
-    comparison['Other_Transactions'] = comparison['Total_Transactions'] - comparison['Competitor_Transactions']
-    
-    # Calculate percentages
-    comparison['Competitor_Pct'] = (comparison['Competitor_Spend'] / comparison['Total_Spend'] * 100).round(1)
-    comparison['Other_Pct'] = (comparison['Other_Spend'] / comparison['Total_Spend'] * 100).round(1)
-    
-    # Sort by total spend
-    comparison = comparison.sort_values('Total_Spend', ascending=False)
-    
-    # Create segments
-    comparison['Segment'] = 'Mixed'
-    comparison.loc[comparison['Competitor_Pct'] >= 80, 'Segment'] = 'Competitor-Heavy (80%+)'
-    comparison.loc[comparison['Competitor_Pct'] < 20, 'Segment'] = 'Minimal Competitor (<20%)'
-    comparison.loc[(comparison['Competitor_Pct'] >= 20) & (comparison['Competitor_Pct'] < 80), 'Segment'] = 'Mixed (20-80%)'
-    
-    # Display top 25
-    display_comparison = comparison.head(25).copy()
-    display_comparison['Total_Spend'] = display_comparison['Total_Spend'].apply(lambda x: f"${x:,.2f}")
-    display_comparison['Competitor_Spend'] = display_comparison['Competitor_Spend'].apply(lambda x: f"${x:,.2f}")
-    display_comparison['Other_Spend'] = display_comparison['Other_Spend'].apply(lambda x: f"${x:,.2f}")
-    display_comparison['Competitor_Pct'] = display_comparison['Competitor_Pct'].apply(lambda x: f"{x:.1f}%")
-    display_comparison['Other_Pct'] = display_comparison['Other_Pct'].apply(lambda x: f"{x:.1f}%")
-    
-    print("Top 25 Accounts - Total vs Competitor Spend:")
-    display(display_comparison[['Total_Spend', 'Total_Transactions', 'Competitor_Spend', 
-                                'Competitor_Transactions', 'Other_Spend', 'Other_Transactions', 
-                                'Competitor_Pct', 'Segment']])
-    
-    # Segment summary
-    segment_summary = comparison.groupby('Segment').agg({
-        'Total_Spend': ['count', 'sum', 'mean'],
-        'Competitor_Spend': ['sum', 'mean'],
-        'Other_Spend': ['sum', 'mean']
-    }).round(2)
-    
-    segment_summary.columns = ['Account_Count', 'Total_Spend_Sum', 'Total_Spend_Avg',
-                               'Competitor_Spend_Sum', 'Competitor_Spend_Avg',
-                               'Other_Spend_Sum', 'Other_Spend_Avg']
-    
-    segment_summary = segment_summary.reset_index()
-    
-    # Format for display
-    display_segments = segment_summary.copy()
-    for col in ['Total_Spend_Sum', 'Total_Spend_Avg', 'Competitor_Spend_Sum', 
-                'Competitor_Spend_Avg', 'Other_Spend_Sum', 'Other_Spend_Avg']:
-        display_segments[col] = display_segments[col].apply(lambda x: f"${x:,.2f}")
-    
-    print(f"\nSegment Summary:")
-    display(display_segments)
-    
-    # Key insights
-    competitor_heavy = len(comparison[comparison['Competitor_Pct'] >= 80])
-    minimal_competitor = len(comparison[comparison['Competitor_Pct'] < 20])
-    total_accounts = len(comparison)
-    
-    insights = pd.DataFrame({
-        'Insight': [
-            'Total Accounts Analyzed',
-            'Competitor-Heavy (80%+ at competitor)',
-            'Minimal Competitor (<20% at competitor)',
-            'Mixed Spending (20-80%)',
-            '',
-            'AT RISK: High competitor spend',
-            'OPPORTUNITY: Low competitor spend'
-        ],
-        'Value': [
-            f"{total_accounts:,}",
-            f"{competitor_heavy:,} ({competitor_heavy/total_accounts*100:.1f}%)",
-            f"{minimal_competitor:,} ({minimal_competitor/total_accounts*100:.1f}%)",
-            f"{len(comparison[(comparison['Competitor_Pct'] >= 20) & (comparison['Competitor_Pct'] < 80)]):,}",
-            '',
-            f"{competitor_heavy:,} accounts to retain",
-            f"{minimal_competitor:,} accounts to grow"
-        ]
-    })
-    
-    print(f"\nKey Insights:")
-    display(insights)
-    
-    # Store for export and visualization
-    competitor_spend_analysis[competitor] = comparison
+    category = competitor_trans['competitor_category'].iloc[0]
+
+    # Normalize name (reuse function from cell 04)
+    norm_name = normalize_competitor_name(competitor)
+
+    comp_accounts = competitor_trans['primary_account_num'].unique()
+
+    # Competitor transaction count per account
+    comp_txn = competitor_trans.groupby('primary_account_num')['amount'].count()
+
+    # Total transaction count per account across all activity
+    total_txn = combined_df[
+        combined_df['primary_account_num'].isin(comp_accounts)
+    ].groupby('primary_account_num')['amount'].count()
+
+    # Transaction share %
+    share = (comp_txn / total_txn * 100).dropna()
+
+    for acct, pct in share.items():
+        engagement_rows.append({
+            'competitor': norm_name,
+            'category': clean_category(category),
+            'account': acct,
+            'comp_txns': comp_txn.get(acct, 0),
+            'total_txns': total_txn.get(acct, 0),
+            'share_pct': pct,
+        })
+
+eng_acct_df = pd.DataFrame(engagement_rows)
+
+# Roll up normalized names
+eng_summary = eng_acct_df.groupby(['competitor', 'category']).agg(
+    accounts=('account', 'nunique'),
+    avg_share=('share_pct', 'mean'),
+    heavy=('share_pct', lambda x: (x >= 50).sum()),
+    moderate=('share_pct', lambda x: ((x >= 20) & (x < 50)).sum()),
+    light=('share_pct', lambda x: (x < 20).sum()),
+).reset_index()
+
+eng_summary['heavy_pct'] = eng_summary['heavy'] / eng_summary['accounts'] * 100
+eng_summary['moderate_pct'] = eng_summary['moderate'] / eng_summary['accounts'] * 100
+eng_summary['light_pct'] = eng_summary['light'] / eng_summary['accounts'] * 100
+
+# Top 12 by account count
+eng_top = eng_summary.sort_values('accounts', ascending=False).head(12)
+eng_top = eng_top.sort_values('avg_share', ascending=True)
+
+# --- Conference visual: Engagement Depth Distribution ---
+fig, ax = plt.subplots(figsize=(14, 9))
+
+y_pos = range(len(eng_top))
+
+# Stacked bars: Light (left), Moderate (middle), Heavy (right)
+bars_light = ax.barh(y_pos, eng_top['light_pct'],
+                     color=CONF_COLORS['success'], alpha=0.7,
+                     edgecolor='white', linewidth=1.5, height=0.65,
+                     label='Light (<20% of txns)', zorder=3)
+
+bars_mod = ax.barh(y_pos, eng_top['moderate_pct'],
+                   left=eng_top['light_pct'],
+                   color=CONF_COLORS['warning'],
+                   edgecolor='white', linewidth=1.5, height=0.65,
+                   label='Moderate (20-50%)', zorder=3)
+
+bars_heavy = ax.barh(y_pos, eng_top['heavy_pct'],
+                     left=eng_top['light_pct'].values + eng_top['moderate_pct'].values,
+                     color=CONF_COLORS['accent'],
+                     edgecolor='white', linewidth=1.5, height=0.65,
+                     label='Heavy (50%+ of txns)', zorder=3)
+
+# Segment count labels inside bars (only if segment > 12%)
+for i, (_, row) in enumerate(eng_top.iterrows()):
+    left = 0
+    for seg_pct, seg_count, color in [
+        (row['light_pct'], int(row['light']), 'white'),
+        (row['moderate_pct'], int(row['moderate']), 'white'),
+        (row['heavy_pct'], int(row['heavy']), 'white'),
+    ]:
+        if seg_pct > 12:
+            ax.text(left + seg_pct / 2, i, f"{seg_count:,}",
+                    ha='center', va='center', fontsize=12, fontweight='bold',
+                    color=color,
+                    path_effects=[pe.withStroke(linewidth=2, foreground='#333333')])
+        left += seg_pct
+
+# Account count annotation on right
+for i, (_, row) in enumerate(eng_top.iterrows()):
+    ax.text(101, i, f"{int(row['accounts']):,} accts",
+            fontsize=12, fontweight='bold', color=CONF_COLORS['dark_text'], va='center')
+
+# Y-axis: competitor names with category color dot
+labels = []
+for _, row in eng_top.iterrows():
+    labels.append(row['competitor'])
+
+ax.set_yticks(y_pos)
+ax.set_yticklabels(labels, fontsize=13, fontweight='bold')
+ax.set_xlabel('Share of Member Transactions (%)', fontsize=16, fontweight='bold', labelpad=12)
+ax.set_xlim(0, 115)
+ax.xaxis.set_major_formatter(plt.FuncFormatter(fmt_pct))
+
+clean_axes(ax)
+ax.xaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.5)
+ax.set_axisbelow(True)
+
+ax.set_title('Competitor Engagement Depth',
+             fontsize=26, fontweight='bold', color=CONF_COLORS['dark_text'], pad=20, loc='left')
+ax.text(0.0, 1.02,
+        "What share of member transactions go to each competitor?",
+        transform=ax.transAxes, fontsize=14, color=CONF_COLORS['muted'], style='italic')
+
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.07),
+          ncol=3, fontsize=13, frameon=False)
+
+# Summary callout
+total_heavy = eng_summary['heavy'].sum()
+total_accts = eng_summary['accounts'].sum()
+avg_share_all = eng_acct_df['share_pct'].mean()
+ax.text(0.97, 0.05,
+        f"Avg share: {avg_share_all:.1f}%\nHeavy users: {total_heavy:,} / {total_accts:,}",
+        transform=ax.transAxes, fontsize=14, fontweight='bold',
+        color=CONF_COLORS['accent'], ha='right', va='bottom',
+        bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+                  edgecolor=CONF_COLORS['accent'], alpha=0.9))
+
+plt.tight_layout()
+plt.subplots_adjust(bottom=0.12)
+plt.show()
+
+# Store for export
+competitor_engagement_data = eng_summary.sort_values('accounts', ascending=False)
+
+print(f"\n    INSIGHT: Members using competitors send an average of {avg_share_all:.1f}% of their transactions there.")
+if total_heavy > 0:
+    top_heavy = eng_summary.sort_values('heavy', ascending=False).iloc[0]
+    print(f"    HIGHEST RISK: {top_heavy['competitor']} has {int(top_heavy['heavy']):,} heavy users (50%+ of txns).")
+    print(f"    ACTION: Prioritize retention for {total_heavy:,} heavy-engagement members across all competitors.")
