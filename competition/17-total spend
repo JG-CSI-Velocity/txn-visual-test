@@ -46,7 +46,7 @@ eng_top = eng_summary.sort_values('accounts', ascending=False).head(12)
 eng_top = eng_top.sort_values('avg_share', ascending=True)
 
 # --- Conference visual: Engagement Depth Distribution ---
-fig, ax = plt.subplots(figsize=(14, 9))
+fig, ax = plt.subplots(figsize=(8, 7))
 
 y_pos = range(len(eng_top))
 
@@ -94,9 +94,9 @@ for _, row in eng_top.iterrows():
     labels.append(row['competitor'])
 
 ax.set_yticks(y_pos)
-ax.set_yticklabels(labels, fontsize=13, fontweight='bold')
-ax.set_xlabel('Share of Member Transactions (%)', fontsize=16, fontweight='bold', labelpad=12)
-ax.set_xlim(0, 115)
+ax.set_yticklabels(labels, fontsize=12, fontweight='bold')
+ax.set_xlabel('Share of Member Transactions (%)', fontsize=13, fontweight='bold', labelpad=10)
+ax.set_xlim(0, 118)
 ax.xaxis.set_major_formatter(plt.FuncFormatter(fmt_pct))
 
 clean_axes(ax)
@@ -104,13 +104,13 @@ ax.xaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.5)
 ax.set_axisbelow(True)
 
 ax.set_title('Competitor Engagement Depth',
-             fontsize=26, fontweight='bold', color=CONF_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.02,
+             fontsize=20, fontweight='bold', color=CONF_COLORS['dark_text'], pad=20, loc='left')
+ax.text(0.0, 1.06,
         "What share of member transactions go to each competitor?",
-        transform=ax.transAxes, fontsize=14, color=CONF_COLORS['muted'], style='italic')
+        transform=ax.transAxes, fontsize=11, color=CONF_COLORS['muted'], style='italic')
 
-ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.07),
-          ncol=3, fontsize=13, frameon=False)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.08),
+          ncol=3, fontsize=11, frameon=False)
 
 # Summary callout
 total_heavy = eng_summary['heavy'].sum()
