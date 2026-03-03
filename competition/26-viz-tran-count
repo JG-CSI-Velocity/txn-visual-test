@@ -1,0 +1,25 @@
+# ===========================================================================
+# CELL 6: VISUALIZATION - Transaction Count Distribution
+# ===========================================================================
+"""
+## Competitor Analysis - Transaction Count Distribution
+"""
+
+for competitor, account_summary in all_account_summaries.items():
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    ax.hist(account_summary['Transaction Count'], bins=30, color='#4ECDC4', edgecolor='black', alpha=0.7)
+    ax.set_xlabel('Number of Transactions per Account', fontsize=12)
+    ax.set_ylabel('Number of Accounts', fontsize=12)
+    ax.set_title(f'Transaction Count Distribution - {competitor}', fontsize=14, fontweight='bold')
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Add summary stats
+    mean_trans = account_summary['Transaction Count'].mean()
+    median_trans = account_summary['Transaction Count'].median()
+    ax.axvline(mean_trans, color='red', linestyle='--', linewidth=2, label=f'Mean: {mean_trans:.1f}')
+    ax.axvline(median_trans, color='orange', linestyle='--', linewidth=2, label=f'Median: {median_trans:.1f}')
+    ax.legend()
+    
+    plt.tight_layout()
+    plt.show()
