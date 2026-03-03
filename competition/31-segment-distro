@@ -39,3 +39,7 @@ for competitor, comparison in competitor_spend_analysis.items():
     plt.tight_layout()
     plt.show()
 
+
+for competitor, comparison in competitor_spend_analysis.items():
+    print(f"{competitor}: {comparison.columns.tolist()}")
+    break
