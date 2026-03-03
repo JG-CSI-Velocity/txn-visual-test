@@ -1,73 +1,157 @@
+# ===========================================================================
+# CELL 18: COMPETITIVE LANDSCAPE -- Digital Banks Threat + BNPL Opportunity
+# ===========================================================================
+# Two-panel view:
+#   Top:    All categories by member penetration (digital banks = threat, BNPL = opportunity)
+#   Bottom: Digital banks deep dive -- which specific fintechs are capturing your members?
 
+competitor_txns = combined_df[combined_df['competitor_category'].notna()].copy()
+total_accounts = combined_df['primary_account_num'].nunique()
 
-# Tag competitors (if not already tagged)
-if 'competitor_category' not in combined_df.columns:
-    combined_df = tag_competitors(combined_df, merchant_col='merchant_consolidated')
+# --- Category-level aggregation ---
+cat_agg = (
+    competitor_txns.groupby('competitor_category')
+    .agg(
+        transactions=('amount', 'count'),
+        accounts=('primary_account_num', 'nunique'),
+    )
+    .reset_index()
+)
+cat_agg['category_label'] = cat_agg['competitor_category'].apply(clean_category)
+cat_agg['penetration'] = cat_agg['accounts'] / total_accounts * 100
+cat_agg = cat_agg.sort_values('accounts', ascending=True)
 
-competitor_txns = combined_df[combined_df['competitor_category'].notna()]
+# --- Color logic: digital banks = red threat, bnpl = teal opportunity, rest = steel ---
+def cat_bar_color(cat_raw):
+    if cat_raw == 'digital_banks':
+        return CONF_COLORS['accent']
+    if cat_raw == 'bnpl':
+        return CONF_COLORS['success']
+    return CONF_COLORS['info']
 
-print("=" * 120)
-print(" " * 40 + "M6A-3: COMPETITOR DETECTION SUMMARY")
-print("=" * 120)
+bar_colors = [cat_bar_color(c) for c in cat_agg['competitor_category']]
 
-if len(competitor_txns) == 0:
-    print("\nNo competitor transactions found")
-else:
-    total_comp_txns = len(competitor_txns)
-    total_comp_spend = competitor_txns['amount'].sum()
-    total_comp_accounts = competitor_txns['primary_account_num'].nunique()
-    total_spend = combined_df['amount'].sum()
-    total_accounts = combined_df['primary_account_num'].nunique()
+# =====================================================================
+# CHART 1: Category Landscape
+# =====================================================================
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 14),
+                                gridspec_kw={'height_ratios': [1, 1.1]})
 
-    print(f"\nSearched {len(combined_df):,} transactions")
-    print(f"  Competitor transactions: {total_comp_txns:,}")
-    print(f"  Competitor spend:        ${total_comp_spend:,.2f} ({total_comp_spend / total_spend * 100:.1f}% of total)")
-    print(f"  Unique accounts:         {total_comp_accounts:,} ({total_comp_accounts / total_accounts * 100:.1f}% of {total_accounts:,})")
-    print(f"  Unique patterns matched: {competitor_txns['competitor_match'].nunique()}")
+y_pos = range(len(cat_agg))
+ax1.barh(y_pos, cat_agg['accounts'],
+         color=bar_colors, edgecolor='white', linewidth=1.5, height=0.65, zorder=3)
 
-    # Category breakdown
-    print(f"\nBy Category:")
-    cat_summary = (
-        competitor_txns.groupby('competitor_category')
+for i, (_, row) in enumerate(cat_agg.iterrows()):
+    label = f"{row['accounts']:,} members ({row['penetration']:.1f}%)"
+    ax1.text(row['accounts'] * 1.02, i, label,
+             fontsize=13, fontweight='bold', color=CONF_COLORS['dark_text'], va='center')
+
+    # Tag digital banks and bnpl
+    if row['competitor_category'] == 'digital_banks':
+        ax1.text(row['accounts'] * 0.5, i, 'THREAT',
+                 ha='center', va='center', fontsize=12, fontweight='bold', color='white',
+                 path_effects=[pe.withStroke(linewidth=2.5, foreground=CONF_COLORS['accent'])])
+    elif row['competitor_category'] == 'bnpl':
+        ax1.text(row['accounts'] * 0.5, i, 'OPPORTUNITY',
+                 ha='center', va='center', fontsize=12, fontweight='bold', color='white',
+                 path_effects=[pe.withStroke(linewidth=2.5, foreground=CONF_COLORS['success'])])
+
+ax1.set_yticks(y_pos)
+ax1.set_yticklabels(cat_agg['category_label'], fontsize=14, fontweight='bold')
+ax1.set_xlabel('Unique Members', fontsize=16, fontweight='bold', labelpad=12)
+ax1.xaxis.set_major_formatter(plt.FuncFormatter(fmt_count))
+ax1.set_xlim(0, cat_agg['accounts'].max() * 1.45)
+
+clean_axes(ax1)
+ax1.xaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.5)
+ax1.set_axisbelow(True)
+
+ax1.set_title('Competitive Landscape by Category',
+              fontsize=26, fontweight='bold', color=CONF_COLORS['dark_text'], pad=20, loc='left')
+ax1.text(0.0, 1.03,
+         f"% of {total_accounts:,} total members using each competitor category",
+         transform=ax1.transAxes, fontsize=14, color=CONF_COLORS['muted'], style='italic')
+
+# =====================================================================
+# CHART 2: Digital Banks Deep Dive
+# =====================================================================
+digital_txns = competitor_txns[competitor_txns['competitor_category'] == 'digital_banks'].copy()
+
+if len(digital_txns) > 0:
+    merch_col = 'merchant_consolidated'
+
+    # Normalize names
+    digital_txns['norm_merchant'] = digital_txns[merch_col].apply(normalize_competitor_name)
+
+    db_agg = (
+        digital_txns.groupby('norm_merchant')
         .agg(
             transactions=('amount', 'count'),
-            spend=('amount', 'sum'),
             accounts=('primary_account_num', 'nunique'),
         )
-        .sort_values('spend', ascending=False)
+        .reset_index()
+        .sort_values('accounts', ascending=True)
+        .tail(12)
     )
-    for cat, row in cat_summary.iterrows():
-        label = cat.replace('_', ' ').title()
-        print(f"  {label:20s} {row['transactions']:>8,} txns  ${row['spend']:>14,.2f}  ({row['accounts']:,} accounts)")
+    db_agg['penetration'] = db_agg['accounts'] / total_accounts * 100
 
-    # True competitors vs payment ecosystems
-    true_spend = competitor_txns[competitor_txns['competitor_category'].isin(TRUE_COMPETITORS)]['amount'].sum()
-    eco_spend = competitor_txns[competitor_txns['competitor_category'].isin(PAYMENT_ECOSYSTEMS)]['amount'].sum()
-    print(f"\n  True competitor spend:   ${true_spend:>14,.2f}")
-    print(f"  Payment ecosystem spend: ${eco_spend:>14,.2f}")
+    y2 = range(len(db_agg))
 
-    # Top 10 competitors by spend
-    merch_col = 'merchant_consolidated'
-    top10 = (
-        competitor_txns.groupby(merch_col)
-        .agg(
-            spend=('amount', 'sum'),
-            txns=('amount', 'count'),
-            category=('competitor_category', 'first'),
-        )
-        .sort_values('spend', ascending=False)
-        .head(10)
-    )
-    print(f"\nTop 10 Competitors:")
-    for merchant, row in top10.iterrows():
-        label = row['category'].replace('_', ' ').title()
-        print(f"  {merchant:40s} ${row['spend']:>12,.2f}  {row['txns']:>6,} txns  [{label}]")
+    # Gradient: darker red = more accounts
+    max_accts = db_agg['accounts'].max()
+    db_colors = [
+        CONF_COLORS['accent'] if a == max_accts
+        else '#C0392B' if a >= max_accts * 0.5
+        else '#E74C3C'
+        for a in db_agg['accounts']
+    ]
 
-    # Unmatched financial discovery
-    print(f"\n{'=' * 120}")
-    unmatched = discover_unmatched_financial(competitor_txns if 'competitor_category' in combined_df.columns else combined_df)
-    if len(unmatched) > 0:
-        print(f"\nPotential competitors NOT in config ({len(unmatched)}):")
-        display(unmatched.head(20))
+    ax2.barh(y2, db_agg['accounts'],
+             color=db_colors, edgecolor='white', linewidth=1.5, height=0.65, zorder=3)
 
-print("=" * 120)
+    for i, (_, row) in enumerate(db_agg.iterrows()):
+        ax2.text(row['accounts'] * 1.02, i,
+                 f"{row['accounts']:,} ({row['penetration']:.1f}%)",
+                 fontsize=13, fontweight='bold', color=CONF_COLORS['dark_text'], va='center')
+
+    ax2.set_yticks(y2)
+    ax2.set_yticklabels(db_agg['norm_merchant'], fontsize=13, fontweight='bold')
+    ax2.set_xlabel('Unique Members', fontsize=16, fontweight='bold', labelpad=12)
+    ax2.xaxis.set_major_formatter(plt.FuncFormatter(fmt_count))
+    ax2.set_xlim(0, db_agg['accounts'].max() * 1.35)
+
+    clean_axes(ax2)
+    ax2.xaxis.grid(True, color=CONF_COLORS['grid'], linewidth=0.5, alpha=0.5)
+    ax2.set_axisbelow(True)
+
+    total_db_accts = digital_txns['primary_account_num'].nunique()
+    ax2.set_title('Digital Banks: Who Is Capturing Your Members?',
+                  fontsize=22, fontweight='bold', color=CONF_COLORS['accent'], pad=20, loc='left')
+    ax2.text(0.0, 1.03,
+             f"{total_db_accts:,} members with digital bank activity ({total_db_accts / total_accounts * 100:.1f}% penetration)",
+             transform=ax2.transAxes, fontsize=14, color=CONF_COLORS['muted'], style='italic')
+else:
+    ax2.text(0.5, 0.5, 'No digital bank transactions detected',
+             transform=ax2.transAxes, ha='center', va='center', fontsize=18, color=CONF_COLORS['muted'])
+    ax2.axis('off')
+
+plt.tight_layout()
+plt.subplots_adjust(hspace=0.35)
+plt.show()
+
+# --- Insight callouts ---
+if len(cat_agg) > 0:
+    db_row = cat_agg[cat_agg['competitor_category'] == 'digital_banks']
+    bnpl_row = cat_agg[cat_agg['competitor_category'] == 'bnpl']
+
+    if len(db_row) > 0:
+        db = db_row.iloc[0]
+        print(f"\n    THREAT: Digital Banks reach {db['accounts']:,} members ({db['penetration']:.1f}% penetration).")
+
+    if len(bnpl_row) > 0:
+        bp = bnpl_row.iloc[0]
+        print(f"    OPPORTUNITY: BNPL has {bp['accounts']:,} members -- offer your own BNPL/installment product.")
+
+    if len(digital_txns) > 0:
+        top_db = db_agg.iloc[-1]
+        print(f"    TOP DIGITAL THREAT: {top_db['norm_merchant']} with {top_db['accounts']:,} members.")
