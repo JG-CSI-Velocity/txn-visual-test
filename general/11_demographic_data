@@ -64,11 +64,55 @@ for band in AGE_BAND_LABELS:
             .sort_values(ascending=False).head(10)
         )
 
-print("Demographic data built.")
-print(f"  Age-matched transactions: {len(age_matched):,} ({len(age_matched)/len(demo_df)*100:.1f}%)")
-print(f"  Unmatched (no age data): {len(age_unmatched):,}")
-print(f"\n  Age band distribution:")
-for _, row in demo_summary.iterrows():
-    print(f"    {row['age_band']:>5s}: {row['account_count']:>5,} accounts, "
-          f"{row['txn_count']:>8,} txns ({row['txn_pct']:.1f}%), "
-          f"{row['txn_per_account']:.1f} txns/acct")
+# ---------------------------------------------------------------------------
+# Conference-styled demographic summary
+# ---------------------------------------------------------------------------
+match_pct = len(age_matched) / len(demo_df) * 100 if len(demo_df) > 0 else 0
+
+demo_display = demo_summary[['age_band', 'account_count', 'txn_count',
+                              'txn_pct', 'merchant_count', 'txn_per_account']].copy()
+demo_display.columns = ['Age Band', 'Accounts', 'Transactions', 'Txn %',
+                         'Merchants', 'Txns/Account']
+
+styled = (
+    demo_display.style
+    .hide(axis='index')
+    .format({
+        'Accounts': '{:,.0f}',
+        'Transactions': '{:,.0f}',
+        'Txn %': '{:.1f}%',
+        'Merchants': '{:,.0f}',
+        'Txns/Account': '{:.1f}',
+    })
+    .set_properties(**{
+        'font-size': '15px',
+        'font-weight': 'bold',
+        'text-align': 'center',
+        'border': '1px solid #E9ECEF',
+        'padding': '10px 14px',
+    })
+    .set_table_styles([
+        {'selector': 'th', 'props': [
+            ('background-color', GEN_COLORS['primary']),
+            ('color', 'white'),
+            ('font-size', '16px'),
+            ('font-weight', 'bold'),
+            ('text-align', 'center'),
+            ('padding', '10px 14px'),
+        ]},
+        {'selector': 'caption', 'props': [
+            ('font-size', '22px'),
+            ('font-weight', 'bold'),
+            ('color', GEN_COLORS['dark_text']),
+            ('text-align', 'left'),
+            ('padding-bottom', '12px'),
+        ]},
+    ])
+    .set_caption("Demographic Summary by Age Band")
+    .bar(subset=['Transactions'], color=GEN_COLORS['info'], vmin=0)
+)
+
+display(styled)
+
+print(f"\n    Age-matched: {len(age_matched):,} transactions ({match_pct:.1f}%)")
+print(f"    Unmatched (no ODDD age data): {len(age_unmatched):,}")
