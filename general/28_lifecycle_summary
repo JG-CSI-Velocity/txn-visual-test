@@ -2,6 +2,7 @@
 # LIFECYCLE SUMMARY: Full Account Age Breakdown (Conference Edition)
 # ===========================================================================
 # Styled table + findings + callouts.
+# All metrics labeled with time periods. TTM-only for activation metrics.
 
 lc_full = lifecycle_summary.copy()
 lc_full['acct_age_band'] = pd.Categorical(
@@ -10,25 +11,30 @@ lc_full['acct_age_band'] = pd.Categorical(
 lc_full = lc_full.sort_values('acct_age_band')
 
 # Build display table
-lc_table = lc_full[['acct_age_band', 'account_count', 'avg_txns',
-                     'median_days_to_first', 'avg_oddd_spend',
-                     'avg_txn_spend', 'pct_very_high']].copy()
-lc_table.columns = ['Account Age', 'Accounts', 'Avg Txns', 'Med Days to 1st Txn',
-                     'Avg ODDD Spend', 'Avg Txn Spend', '% Very High']
+lc_table = lc_full[['acct_age_band', 'account_count', 'avg_txns_per_month',
+                     'avg_oddd_12mo', 'avg_txn_amount',
+                     'median_days_to_first', 'pct_activated_30d',
+                     'pct_very_high']].copy()
+
+lc_table.columns = ['Account Age', 'Accounts', 'Avg Txns/Mo',
+                     'Avg ODDD 12mo Spend', 'Avg Txn Size',
+                     f'Med Days to 1st (TTM)', '% <30d Activation (TTM)',
+                     f'% Very High ({SPEND_THRESHOLDS["Very High"]})']
 
 styled = (
     lc_table.style
     .hide(axis='index')
     .format({
         'Accounts': '{:,.0f}',
-        'Avg Txns': '{:.1f}',
-        'Med Days to 1st Txn': '{:.0f}',
-        'Avg ODDD Spend': '${:,.0f}',
-        'Avg Txn Spend': '${:,.0f}',
-        '% Very High': '{:.1f}%',
-    })
+        'Avg Txns/Mo': '{:.1f}',
+        'Avg ODDD 12mo Spend': '${:,.0f}',
+        'Avg Txn Size': '${:,.0f}',
+        'Med Days to 1st (TTM)': '{:.0f}',
+        '% <30d Activation (TTM)': '{:.0f}%',
+        f'% Very High ({SPEND_THRESHOLDS["Very High"]})': '{:.1f}%',
+    }, na_rep='--')
     .set_properties(**{
-        'font-size': '14px',
+        'font-size': '13px',
         'font-weight': 'bold',
         'text-align': 'center',
         'border': '1px solid #E9ECEF',
@@ -38,7 +44,7 @@ styled = (
         {'selector': 'th', 'props': [
             ('background-color', GEN_COLORS['primary']),
             ('color', 'white'),
-            ('font-size', '15px'),
+            ('font-size', '14px'),
             ('font-weight', 'bold'),
             ('text-align', 'center'),
             ('padding', '10px 12px'),
@@ -53,7 +59,7 @@ styled = (
     ])
     .set_caption("Account Lifecycle Scorecard")
     .bar(subset=['Accounts'], color=GEN_COLORS['info'], vmin=0)
-    .bar(subset=['% Very High'], color=GEN_COLORS['accent'], vmin=0, vmax=100)
+    .bar(subset=[f'% Very High ({SPEND_THRESHOLDS["Very High"]})'], color=GEN_COLORS['accent'], vmin=0, vmax=100)
 )
 
 display(styled)
@@ -65,42 +71,45 @@ print("\n" + "=" * 80)
 print("  LIFECYCLE FINDINGS")
 print("=" * 80)
 
-# Newest cohort activation
+# Newest cohort activation (TTM only)
 newest = lc_full[lc_full['acct_age_band'] == '1-90d']
 if len(newest) > 0:
     n = newest.iloc[0]
-    print(f"  1. Newest accounts (1-90d): {n['account_count']:,.0f} accounts, "
-          f"median {n['median_days_to_first']:.0f} days to first transaction")
+    med_days = n.get('median_days_to_first', None)
+    if pd.notna(med_days):
+        print(f"  1. Newest accounts (1-90d): {n['account_count']:,.0f} accounts, "
+              f"median {med_days:.0f} days to first transaction")
+    else:
+        print(f"  1. Newest accounts (1-90d): {n['account_count']:,.0f} accounts")
 
-# Most active band
-most_active = lc_full.loc[lc_full['avg_txns'].idxmax()]
+# Most active band (by monthly txn rate)
+most_active = lc_full.loc[lc_full['avg_txns_per_month'].idxmax()]
 print(f"  2. Most active band: {most_active['acct_age_band']} "
-      f"({most_active['avg_txns']:.1f} avg txns/account)")
+      f"({most_active['avg_txns_per_month']:.1f} avg txns/month)")
 
-# Highest spend band
-highest_spend = lc_full.loc[lc_full['avg_oddd_spend'].idxmax()]
-print(f"  3. Highest spend band: {highest_spend['acct_age_band']} "
-      f"(${highest_spend['avg_oddd_spend']:,.0f} avg ODDD spend)")
+# Highest spend band (ODDD 12mo)
+highest_spend = lc_full.loc[lc_full['avg_oddd_12mo'].idxmax()]
+print(f"  3. Highest 12mo spend band: {highest_spend['acct_age_band']} "
+      f"(${highest_spend['avg_oddd_12mo']:,.0f} avg ODDD trailing 12mo)")
 
 # New account risk
-new_bands = lc_full[lc_full['acct_age_band'].isin(['1-90d', '91-180d', '181-365d'])]
+new_bands = lifecycle_matched[lifecycle_matched['acct_age_band'].isin(['1-90d', '91-180d', '181-365d'])]
 if len(new_bands) > 0:
-    new_low_pct = lifecycle_matched[
-        lifecycle_matched['acct_age_band'].isin(['1-90d', '91-180d', '181-365d']) &
-        (lifecycle_matched['spend_tier'] == 'Low')
-    ].shape[0]
-    new_total = lifecycle_matched[
-        lifecycle_matched['acct_age_band'].isin(['1-90d', '91-180d', '181-365d'])
-    ].shape[0]
-    if new_total > 0:
-        pct_low = new_low_pct / new_total * 100
-        print(f"  4. New accounts (< 1yr) in Low spend tier: {pct_low:.0f}% "
-              f"-- onboarding engagement opportunity")
+    new_low = (new_bands['spend_tier'] == 'Low').sum()
+    new_total = len(new_bands)
+    pct_low = new_low / new_total * 100
+    print(f"  4. New accounts (< 1yr) in Low spend tier ({SPEND_THRESHOLDS['Low']}): "
+          f"{pct_low:.0f}% -- onboarding engagement opportunity")
 
-# Overall median activation
-overall_median = lifecycle_matched['days_to_first_txn'].median()
-pct_30d = (lifecycle_matched['days_to_first_txn'] <= 30).sum() / len(lifecycle_matched) * 100
-print(f"  5. Overall activation: median {overall_median:.0f} days, "
-      f"{pct_30d:.0f}% within 30 days")
+# TTM activation speed
+ttm_data = lifecycle_matched[lifecycle_matched['is_ttm'] & lifecycle_matched['days_to_first_txn'].notna()]
+if len(ttm_data) > 0:
+    ttm_median = ttm_data['days_to_first_txn'].median()
+    pct_30d = (ttm_data['days_to_first_txn'] <= 30).sum() / len(ttm_data) * 100
+    print(f"  5. TTM activation: median {ttm_median:.0f} days, "
+          f"{pct_30d:.0f}% within 30 days ({len(ttm_data):,} TTM accounts)")
 
+print(f"\n  Spend tier definitions (ODDD Total Spend quartiles):")
+for tier in ['Low', 'Medium', 'High', 'Very High']:
+    print(f"    {tier}: {SPEND_THRESHOLDS[tier]}")
 print("=" * 80)

@@ -2,7 +2,15 @@
 # ACCOUNT AGE DATA: Lifecycle Metrics from ODDD (Conference Edition)
 # ===========================================================================
 # Merge Account Age, Date Opened, spend cols from rewards_df.
-# Compute first-txn date, days-to-first-txn, spend tiers.
+# Compute first-txn date, days-to-first-txn (TTM only), spend tiers.
+
+# ---------------------------------------------------------------------------
+# Dataset date range (for labeling downstream)
+# ---------------------------------------------------------------------------
+DATASET_START = combined_df['transaction_date'].min()
+DATASET_END = combined_df['transaction_date'].max()
+DATASET_MONTHS = max(1, round((DATASET_END - DATASET_START).days / 30.44))
+DATASET_LABEL = f"{DATASET_START.strftime('%b %Y')}-{DATASET_END.strftime('%b %Y')}"
 
 # ---------------------------------------------------------------------------
 # Merge account lifecycle fields from ODDD
@@ -41,11 +49,6 @@ lifecycle_df = acct_subset.merge(
     how='inner'
 )
 
-# Days to first transaction
-lifecycle_df['days_to_first_txn'] = (
-    lifecycle_df['first_txn_date'] - lifecycle_df['date_opened']
-).dt.days
-
 # ---------------------------------------------------------------------------
 # Account age bands (9 bands, days-based from Date Opened)
 # ---------------------------------------------------------------------------
@@ -60,6 +63,19 @@ lifecycle_df['acct_age_band'] = pd.cut(
     lifecycle_df['days_since_opened'],
     bins=ACCT_AGE_BINS, labels=ACCT_AGE_LABELS, right=False
 )
+
+# ---------------------------------------------------------------------------
+# TTM flag: accounts opened within trailing twelve months
+# Only these get days_to_first_txn (older accounts lack historical txn data)
+# ---------------------------------------------------------------------------
+lifecycle_df['is_ttm'] = lifecycle_df['days_since_opened'] <= 365
+
+# Days to first transaction -- TTM accounts only
+lifecycle_df['days_to_first_txn'] = np.nan
+ttm_mask = lifecycle_df['is_ttm']
+lifecycle_df.loc[ttm_mask, 'days_to_first_txn'] = (
+    lifecycle_df.loc[ttm_mask, 'first_txn_date'] - lifecycle_df.loc[ttm_mask, 'date_opened']
+).dt.days
 
 # ---------------------------------------------------------------------------
 # Spend tiers (quartiles of ODDD Total Spend among matched accounts)
@@ -80,6 +96,19 @@ if len(spend_valid) > 0:
     lifecycle_df['spend_tier'] = lifecycle_df['oddd_total_spend'].apply(_classify_spend)
 else:
     lifecycle_df['spend_tier'] = None
+    q25, q50, q75 = 0, 0, 0
+
+SPEND_THRESHOLDS = {'Low': f'< ${q25:,.0f}', 'Medium': f'${q25:,.0f}-${q50:,.0f}',
+                    'High': f'${q50:,.0f}-${q75:,.0f}', 'Very High': f'> ${q75:,.0f}'}
+
+# ---------------------------------------------------------------------------
+# Monthly txns per account (annualized for fair comparison across age bands)
+# ---------------------------------------------------------------------------
+lifecycle_df['months_in_dataset'] = np.clip(
+    ((lifecycle_df['last_txn_date'] - lifecycle_df['first_txn_date']).dt.days / 30.44) + 1,
+    1, None
+)
+lifecycle_df['txns_per_month'] = lifecycle_df['txn_count'] / lifecycle_df['months_in_dataset']
 
 # ---------------------------------------------------------------------------
 # Summary per account age band
@@ -88,33 +117,44 @@ lifecycle_matched = lifecycle_df[lifecycle_df['acct_age_band'].notna()]
 
 lifecycle_summary = lifecycle_matched.groupby('acct_age_band', observed=True).agg(
     account_count=('account_number', 'nunique'),
-    avg_txns=('txn_count', 'mean'),
-    median_days_to_first=('days_to_first_txn', 'median'),
-    avg_oddd_spend=('oddd_total_spend', 'mean'),
+    avg_txns_per_month=('txns_per_month', 'mean'),
+    total_txns=('txn_count', 'sum'),
     avg_oddd_12mo=('oddd_12mo_spend', 'mean'),
-    avg_txn_spend=('txn_total_amount', 'mean'),
+    avg_txn_amount=('txn_avg_amount', 'mean'),
     pct_very_high=('spend_tier', lambda x: (x == 'Very High').sum() / len(x) * 100 if len(x) > 0 else 0),
 ).reset_index()
+
+# TTM-only stats for days-to-first-txn (only for bands within TTM)
+ttm_activation = lifecycle_matched[lifecycle_matched['is_ttm']].groupby(
+    'acct_age_band', observed=True
+).agg(
+    median_days_to_first=('days_to_first_txn', 'median'),
+    pct_activated_30d=('days_to_first_txn', lambda x: (x <= 30).sum() / len(x) * 100 if len(x) > 0 else 0),
+).reset_index()
+
+lifecycle_summary = lifecycle_summary.merge(ttm_activation, on='acct_age_band', how='left')
 
 # ---------------------------------------------------------------------------
 # Conference-styled summary
 # ---------------------------------------------------------------------------
 lc_display = lifecycle_summary.copy()
-lc_display.columns = ['Age Band', 'Accounts', 'Avg Txns', 'Median Days to 1st Txn',
-                       'Avg ODDD Spend', 'Avg 12mo Spend', 'Avg Txn Spend', '% Very High']
+lc_display.columns = ['Age Band', 'Accounts', 'Avg Txns/Mo', 'Total Txns',
+                       'Avg 12mo Spend', 'Avg Txn Size', '% Very High',
+                       'Med Days to 1st Txn (TTM)', '% Activated <30d (TTM)']
 
 styled = (
     lc_display.style
     .hide(axis='index')
     .format({
         'Accounts': '{:,.0f}',
-        'Avg Txns': '{:.1f}',
-        'Median Days to 1st Txn': '{:.0f}',
-        'Avg ODDD Spend': '${:,.0f}',
+        'Avg Txns/Mo': '{:.1f}',
+        'Total Txns': '{:,.0f}',
         'Avg 12mo Spend': '${:,.0f}',
-        'Avg Txn Spend': '${:,.0f}',
+        'Avg Txn Size': '${:,.0f}',
         '% Very High': '{:.1f}%',
-    })
+        'Med Days to 1st Txn (TTM)': '{:.0f}',
+        '% Activated <30d (TTM)': '{:.0f}%',
+    }, na_rep='--')
     .set_properties(**{
         'font-size': '14px',
         'font-weight': 'bold',
@@ -145,6 +185,13 @@ styled = (
 
 display(styled)
 
-print(f"\n    Matched accounts: {len(lifecycle_matched):,}")
-print(f"    Median days to first transaction: {lifecycle_matched['days_to_first_txn'].median():.0f}")
-print(f"    Spend tier quartiles: Low < ${q25:,.0f} < Med < ${q50:,.0f} < High < ${q75:,.0f} < Very High")
+print(f"\n    Dataset period: {DATASET_LABEL} ({DATASET_MONTHS} months)")
+print(f"    Matched accounts: {len(lifecycle_matched):,}")
+print(f"    TTM accounts (opened <12mo): {lifecycle_matched['is_ttm'].sum():,}")
+ttm_median = lifecycle_matched.loc[lifecycle_matched['is_ttm'], 'days_to_first_txn'].median()
+if pd.notna(ttm_median):
+    print(f"    TTM median days to first txn: {ttm_median:.0f}")
+print(f"    Spend tiers: Low {SPEND_THRESHOLDS['Low']} | "
+      f"Medium {SPEND_THRESHOLDS['Medium']} | "
+      f"High {SPEND_THRESHOLDS['High']} | "
+      f"Very High {SPEND_THRESHOLDS['Very High']}")

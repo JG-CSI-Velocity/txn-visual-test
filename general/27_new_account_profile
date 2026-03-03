@@ -2,6 +2,7 @@
 # NEW ACCOUNT PROFILE: Spend Tiers for Newest Accounts (Conference Edition)
 # ===========================================================================
 # Stacked bar: spend tier distribution for 1-90d, 91-180d, 181-365d. (8,7).
+# Low on bottom, Very High on top. Shows actual dollar thresholds.
 
 NEW_BANDS = ['1-90d', '91-180d', '181-365d']
 
@@ -18,10 +19,11 @@ if len(new_accts) > 0:
         normalize='index'
     ) * 100
 
-    # Ensure order
+    # Stack order: Low on bottom, Very High on top
+    STACK_ORDER = ['Low', 'Medium', 'High', 'Very High']
     tier_ct = tier_ct.reindex(
         index=[b for b in NEW_BANDS if b in tier_ct.index],
-        columns=[t for t in SPEND_TIER_ORDER if t in tier_ct.columns]
+        columns=[t for t in STACK_ORDER if t in tier_ct.columns]
     ).fillna(0)
 
     fig, ax = plt.subplots(figsize=(8, 7))
@@ -36,7 +38,8 @@ if len(new_accts) > 0:
         ax.bar(
             x, vals, bar_width,
             bottom=bottom, color=color,
-            label=tier, edgecolor='white', linewidth=1
+            label=f"{tier} ({SPEND_THRESHOLDS[tier]})",
+            edgecolor='white', linewidth=1
         )
         # Label segments > 10%
         for j, v in enumerate(vals):
@@ -63,15 +66,19 @@ if len(new_accts) > 0:
 
     ax.legend(
         loc='upper center', bbox_to_anchor=(0.5, -0.08),
-        ncol=4, fontsize=12, frameon=False, title='Spend Tier',
-        title_fontproperties={'weight': 'bold', 'size': 13}
+        ncol=2, fontsize=11, frameon=False, title='Spend Tier (ODDD Total Spend)',
+        title_fontproperties={'weight': 'bold', 'size': 12}
     )
 
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.15)
+    plt.subplots_adjust(bottom=0.18)
     plt.show()
 
-    # Callout
+    # Callout with thresholds
+    print(f"\n    Spend tier thresholds (ODDD Total Spend quartiles):")
+    for tier in STACK_ORDER:
+        print(f"      {tier}: {SPEND_THRESHOLDS[tier]}")
+    print()
     for band in NEW_BANDS:
         if band in tier_ct.index:
             low_pct = tier_ct.loc[band, 'Low'] if 'Low' in tier_ct.columns else 0

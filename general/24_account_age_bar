@@ -1,12 +1,11 @@
 # ===========================================================================
 # ACCOUNT AGE BAR: Activity by Account Age Band (Conference Edition)
 # ===========================================================================
-# Grouped horizontal bar: account count + avg txns/account. (14,7).
+# Grouped horizontal bar: account count + avg txns/month. (14,7).
 
 fig, ax1 = plt.subplots(figsize=(14, 7))
 
 plot_data = lifecycle_summary.copy()
-# Ensure order
 plot_data['acct_age_band'] = pd.Categorical(
     plot_data['acct_age_band'], categories=ACCT_AGE_ORDER, ordered=True
 )
@@ -29,14 +28,14 @@ ax1.set_xlabel("Account Count", fontsize=16, fontweight='bold',
 ax1.xaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
 ax1.tick_params(axis='x', colors=GEN_COLORS['info'])
 
-# Avg txns/account on secondary axis
+# Avg txns/month on secondary axis
 ax2 = ax1.twiny()
 ax2.plot(
-    plot_data['avg_txns'].values, y_pos,
+    plot_data['avg_txns_per_month'].values, y_pos,
     color=GEN_COLORS['accent'], linewidth=3,
     marker='o', markersize=8, zorder=5
 )
-ax2.set_xlabel("Avg Txns / Account", fontsize=16, fontweight='bold',
+ax2.set_xlabel("Avg Txns / Month", fontsize=16, fontweight='bold',
                 color=GEN_COLORS['accent'], labelpad=10)
 ax2.tick_params(axis='x', colors=GEN_COLORS['accent'])
 
@@ -53,7 +52,7 @@ ax1.set_axisbelow(True)
 ax1.set_title("Account Activity by Account Age",
               fontsize=26, fontweight='bold',
               color=GEN_COLORS['dark_text'], pad=40, loc='left')
-ax1.text(0.0, 1.12, "Are newer or older accounts more active?",
+ax1.text(0.0, 1.12, "Are newer or older accounts more active? (monthly txn rate)",
          transform=ax1.transAxes, fontsize=15,
          color=GEN_COLORS['muted'], style='italic')
 
@@ -62,7 +61,7 @@ from matplotlib.lines import Line2D
 legend_elements = [
     plt.Rectangle((0, 0), 1, 1, fc=GEN_COLORS['info'], alpha=0.5, label='Account Count'),
     Line2D([0], [0], color=GEN_COLORS['accent'], linewidth=3, marker='o',
-           markersize=8, label='Avg Txns/Account'),
+           markersize=8, label='Avg Txns/Month'),
 ]
 ax1.legend(
     handles=legend_elements,
