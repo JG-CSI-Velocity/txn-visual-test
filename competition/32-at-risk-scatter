@@ -1,0 +1,78 @@
+# ===========================================================================
+# CELL 10A: VISUALIZATION - AT RISK Accounts (Competitor-Heavy)
+# ===========================================================================
+"""
+## Competitor Analysis - AT RISK Accounts (80%+ at Competitor)
+"""
+
+for competitor, comparison in competitor_spend_analysis.items():
+    # The columns in competitor_spend_analysis are:
+    # 'account', 'competitor_spend', 'total_spend', 'competitor_pct', 'Segment'
+    
+    # Filter to EXTREME RISK accounts only (80%+ at competitor)
+    at_risk = comparison[comparison['Competitor_Pct'] >= 80].copy()
+    
+    if len(at_risk) == 0:
+        continue  # Skip competitors with no extreme risk accounts
+    
+    # Sort by total spend to show biggest accounts first
+    at_risk = at_risk.sort_values('total_spend', ascending=False)
+    
+    fig, ax = plt.subplots(figsize=(14, 10))
+    
+    # Get top 20 AT RISK accounts by total spend
+    top_20_risk = at_risk.head(20).sort_values('total_spend')
+    
+    # Calculate "your bank" spend (other spend)
+    top_20_risk['your_bank_spend'] = top_20_risk['total_spend'] - top_20_risk['competitor_spend']
+    
+    # Create stacked bar chart
+    bars1 = ax.barh(range(len(top_20_risk)), top_20_risk['your_bank_spend'], 
+                    label='Your CU Spend', color='#4ECDC4')
+    bars2 = ax.barh(range(len(top_20_risk)), top_20_risk['competitor_spend'], 
+                    left=top_20_risk['your_bank_spend'], 
+                    label=f'{competitor} Spend', color='#FF6B6B')
+    
+    ax.set_yticks(range(len(top_20_risk)))
+    ax.set_yticklabels([f"Account {i+1}" for i in range(len(top_20_risk))], fontsize=11)
+    ax.set_xlabel('Total Spend ($)', fontsize=13, fontweight='bold')
+    ax.set_title(f'⚠️ Top 20 EXTREME RISK Accounts (80%+ at {competitor})', 
+                 fontsize=15, fontweight='bold', color='#8B0000')
+    ax.legend(loc='lower right', fontsize=11)
+    ax.grid(axis='x', alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+    
+    # Add total value labels with competitor percentage
+    for i, (idx, row) in enumerate(top_20_risk.iterrows()):
+        total = row['total_spend']
+        comp_pct = row['competitor_pct']
+        ax.text(total + (total * 0.02), i, f'${total:,.0f} ({comp_pct:.0f}%)', 
+                va='center', fontsize=10, fontweight='bold')
+    
+    # Add summary box
+    total_at_risk = len(at_risk)
+    total_at_risk_spend = at_risk['total_spend'].sum()
+    total_competitor_spend = at_risk['competitor_spend'].sum()
+    avg_pct = at_risk['competitor_pct'].mean()
+    
+    summary_text = f'🚨 EXTREME RISK ACCOUNTS (80%+ at {competitor})\n'
+    summary_text += f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+    summary_text += f'Total Accounts: {total_at_risk:,}\n'
+    summary_text += f'Total Spend: ${total_at_risk_spend:,.0f}\n'
+    summary_text += f'Competitor Spend: ${total_competitor_spend:,.0f}\n'
+    summary_text += f'Avg % at Competitor: {avg_pct:.1f}%\n'
+    summary_text += f'Your CU Spend: ${total_at_risk_spend - total_competitor_spend:,.0f}'
+    
+    ax.text(0.02, 0.98, summary_text, transform=ax.transAxes,
+            verticalalignment='top', horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='#FFE5E5', alpha=0.95, edgecolor='#8B0000', linewidth=2),
+            fontsize=11, fontweight='bold', family='monospace')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    print(f"\n⚠️ {competitor}: {total_at_risk:,} accounts are EXTREME RISK (80%+ spend at competitor)")
+    print(f"   Showing top 20 by total spend")
+    print("-"*80)
+
+print("\n✓ AT RISK visualization complete")
