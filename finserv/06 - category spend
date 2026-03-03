@@ -1,0 +1,26 @@
+# ===========================================================================
+# CELL 6: VISUALIZATION - Total Spend by Category
+# ===========================================================================
+"""
+## Financial Services Opportunity - Total Spend by Category
+"""
+
+fig, ax = plt.subplots(figsize=(12, 8))
+
+category_spend = {}
+for cat, data in financial_services_data.items():
+    category_spend[cat] = data['transactions']['amount'].sum()
+
+category_spend = dict(sorted(category_spend.items(), key=lambda x: x[1], reverse=True))
+
+bars = ax.barh(list(category_spend.keys()), list(category_spend.values()), color='#FF6B6B', edgecolor='black')
+ax.set_xlabel('Total Spend ($)', fontsize=12)
+ax.set_title('Total Spend by Financial Service Category', fontsize=14, fontweight='bold')
+ax.grid(axis='x', alpha=0.3)
+
+# Add value labels
+for i, (cat, val) in enumerate(category_spend.items()):
+    ax.text(val, i, f' ${val:,.0f}', va='center', fontsize=10, fontweight='bold')
+
+plt.tight_layout()
+plt.show()
