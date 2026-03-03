@@ -45,7 +45,7 @@ for category, patterns in FINANCIAL_SERVICES_PATTERNS.items():
         'merchant_summary': merchant_summary
     }
 
-    print(f"  {category:25s} {len(category_trans):>6,} txns  {category_trans['primary_account_num'].nunique():>5,} accounts")
+    pass  # data stored in financial_services_data
 
 # Build summary DataFrame for visual cells
 finserv_summary = []
@@ -59,6 +59,20 @@ for category, data in financial_services_data.items():
 
 finserv_summary_df = pd.DataFrame(finserv_summary).sort_values('total_transactions', ascending=False)
 
-print(f"\nScan complete: {len(financial_services_data)} categories with activity")
-print(f"Total transactions: {finserv_summary_df['total_transactions'].sum():,}")
-print(f"Total accounts: {finserv_summary_df['unique_accounts'].sum():,}")
+total_txn = finserv_summary_df['total_transactions'].sum()
+total_accts = finserv_summary_df['unique_accounts'].sum()
+
+print(f"Scan complete: {len(financial_services_data)} categories, {total_txn:,} transactions, {total_accts:,} accounts\n")
+
+scan_display = finserv_summary_df.copy()
+scan_display.columns = ['Category', 'Accounts', 'Transactions', 'Merchants']
+display(scan_display.style.hide(axis='index').set_properties(**{
+    'text-align': 'left',
+    'font-weight': 'bold'
+}, subset=['Category']).set_properties(**{
+    'text-align': 'center'
+}, subset=['Accounts', 'Transactions', 'Merchants']).format({
+    'Accounts': '{:,}',
+    'Transactions': '{:,}',
+    'Merchants': '{:,}'
+}))

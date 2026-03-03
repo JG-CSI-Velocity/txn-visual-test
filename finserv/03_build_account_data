@@ -36,7 +36,24 @@ for category, data in financial_services_data.items():
 
     all_financial_accounts[category] = account_summary
 
-print(f"Account data built for {len(all_financial_accounts)} categories:")
+acct_rows = []
 for cat, df in all_financial_accounts.items():
     active = len(df[df['Recency_Days'] <= 30])
-    print(f"  {cat:25s} {len(df):>5,} accounts  ({active:,} active last 30d)")
+    acct_rows.append({
+        'Category': cat,
+        'Accounts': len(df),
+        'Active (30d)': active,
+    })
+
+acct_build_df = pd.DataFrame(acct_rows).sort_values('Accounts', ascending=False)
+
+print(f"Account data built: {len(all_financial_accounts)} categories, {acct_build_df['Accounts'].sum():,} total accounts\n")
+display(acct_build_df.style.hide(axis='index').set_properties(**{
+    'text-align': 'left',
+    'font-weight': 'bold'
+}, subset=['Category']).set_properties(**{
+    'text-align': 'center'
+}, subset=['Accounts', 'Active (30d)']).format({
+    'Accounts': '{:,}',
+    'Active (30d)': '{:,}'
+}))

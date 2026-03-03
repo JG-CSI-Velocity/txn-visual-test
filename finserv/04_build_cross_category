@@ -66,7 +66,22 @@ multi_product_df = multi_product_df.sort_values('leakage_score', ascending=False
 # New leakage flag (first seen within 90 days)
 multi_product_df['is_new_leakage'] = multi_product_df['tenure_days'] <= 90
 
-print(f"Cross-category data built: {len(multi_product_df):,} unique accounts")
-print(f"  Multi-product (2+ categories): {len(multi_product_df[multi_product_df['category_count'] >= 2]):,}")
-print(f"  High leakage score (>60):       {len(multi_product_df[multi_product_df['leakage_score'] > 60]):,}")
-print(f"  New leakage (< 90 days):        {len(multi_product_df[multi_product_df['is_new_leakage']]):,}")
+multi_count = len(multi_product_df[multi_product_df['category_count'] >= 2])
+high_leakage = len(multi_product_df[multi_product_df['leakage_score'] > 60])
+new_leakage = len(multi_product_df[multi_product_df['is_new_leakage']])
+
+print(f"Cross-category leakage scoring: {len(multi_product_df):,} unique accounts\n")
+
+cross_cat_rows = [
+    {'Metric': 'Total unique accounts', 'Count': f"{len(multi_product_df):,}"},
+    {'Metric': 'Multi-product (2+ categories)', 'Count': f"{multi_count:,}"},
+    {'Metric': 'High leakage score (>60)', 'Count': f"{high_leakage:,}"},
+    {'Metric': 'New leakage (< 90 days)', 'Count': f"{new_leakage:,}"},
+]
+cross_cat_display = pd.DataFrame(cross_cat_rows)
+display(cross_cat_display.style.hide(axis='index').set_properties(**{
+    'text-align': 'left',
+    'font-weight': 'bold'
+}, subset=['Metric']).set_properties(**{
+    'text-align': 'center'
+}, subset=['Count']))
