@@ -121,6 +121,8 @@ FINANCIAL_SERVICES_PATTERNS = {
 }
 
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
 
 config_rows = []
 for category, patterns in FINANCIAL_SERVICES_PATTERNS.items():
@@ -129,13 +131,44 @@ for category, patterns in FINANCIAL_SERVICES_PATTERNS.items():
         'Patterns': len(patterns),
     })
 
-config_df = pd.DataFrame(config_rows)
+config_df = pd.DataFrame(config_rows).sort_values('Patterns', ascending=True)
 total_patterns = config_df['Patterns'].sum()
 
-print(f"Financial Services Detection Config: {len(config_df)} categories, {total_patterns} total patterns\n")
-display(config_df.style.hide(axis='index').set_properties(**{
-    'text-align': 'left',
-    'font-weight': 'bold'
-}, subset=['Category']).set_properties(**{
-    'text-align': 'center'
-}, subset=['Patterns']))
+# --- Conference-grade visual ---
+fig, ax = plt.subplots(figsize=(14, 7))
+
+_DARK = '#1B2A4A'
+_ACCENT = '#E63946'
+_MUTED = '#6C757D'
+_BG = '#F8F9FA'
+
+bar_colors = [_ACCENT if v == config_df['Patterns'].max() else '#3A7CA5' for v in config_df['Patterns']]
+
+bars = ax.barh(range(len(config_df)), config_df['Patterns'],
+               color=bar_colors, edgecolor='white', linewidth=1.5, height=0.65, zorder=3)
+
+for i, (_, row) in enumerate(config_df.iterrows()):
+    ax.text(row['Patterns'] + 0.5, i, f"{row['Patterns']}",
+            fontsize=16, fontweight='bold', color=_DARK, va='center')
+
+ax.set_yticks(range(len(config_df)))
+ax.set_yticklabels(config_df['Category'], fontsize=15, fontweight='bold', color=_DARK)
+ax.set_xlabel('Merchant Patterns Tracked', fontsize=16, fontweight='bold', color=_DARK, labelpad=12)
+
+ax.set_xlim(0, config_df['Patterns'].max() * 1.25)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_visible(False)
+ax.spines['bottom'].set_color(_MUTED)
+ax.tick_params(left=False, bottom=True, colors=_MUTED)
+ax.xaxis.grid(True, color='#E0E0E0', linewidth=0.5, alpha=0.5)
+ax.set_axisbelow(True)
+
+ax.set_title('Financial Services Detection Engine',
+             fontsize=26, fontweight='bold', color=_DARK, pad=20, loc='left')
+ax.text(0.0, 1.02,
+        f"{len(config_df)} categories  |  {total_patterns} total merchant patterns",
+        transform=ax.transAxes, fontsize=14, color=_MUTED, style='italic')
+
+plt.tight_layout()
+plt.show()
