@@ -37,7 +37,7 @@ print(f"Loading {len(files_to_load)} transaction files...\n")
 for file_path in files_to_load:
     df = load_transaction_file(file_path)
     transaction_files.append(df)
-    print(f"✓ Loaded: {file_path.name} ({len(df):,} rows)")
+    print(f"  Loaded: {file_path.name} ({len(df):,} rows)")
 
 print(f"\n{'='*50}")
 print(f"Total transactions loaded: {sum(len(df) for df in transaction_files):,}")

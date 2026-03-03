@@ -17,4 +17,4 @@ print(f"Memory Usage: {combined_df.memory_usage(deep=True).sum() / 1024**2:.2f} 
 print(f"\nDate Range: {combined_df['transaction_date'].min()} to {combined_df['transaction_date'].max()}")
 print(f"Unique Accounts: {combined_df['primary_account_num'].nunique():,}")
 print(f"Unique Merchants: {combined_df['merchant_name'].nunique():,}")
-print(f"Total Transaction Value: ${combined_df['amount'].sum():,.2f}")
+print(f"Total Transactions Value: {combined_df['amount'].sum():,.0f}")

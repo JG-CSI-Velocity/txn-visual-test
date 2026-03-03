@@ -107,6 +107,6 @@ print(
 print(f"Older files:         {len(older_files)}")
 
 if unparsed_files:
-    print(f"⚠ Unparsed filenames (no trans-MMDDYYYY in stem): {len(unparsed_files)}")
+    print(f"WARNING: Unparsed filenames (no trans-MMDDYYYY in stem): {len(unparsed_files)}")
     for u in unparsed_files:
         print(f"  {u.name}")

@@ -75,7 +75,7 @@ def standardize_merchant_name(merchant_name):
     if 'DISNEY' in merchant_upper and 'PLUS' in merchant_upper:
         return 'DISNEY+'
     
-    if 'HBO' in merchant_upper or 'MAX' in merchant_upper:
+    if 'HBO' in merchant_upper and 'MAX' in merchant_upper:
         return 'HBO MAX'
     
     # PayPal

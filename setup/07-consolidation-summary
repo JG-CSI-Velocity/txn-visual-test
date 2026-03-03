@@ -23,7 +23,7 @@ consolidated_count = combined_df['merchant_consolidated'].nunique()
 reduction = original_count - consolidated_count
 reduction_pct = (reduction / original_count) * 100
 
-print(f"\n✓ Consolidation complete!")
+print(f"\nConsolidation complete.")
 print(f"  Original unique merchants: {original_count:,}")
 print(f"  After consolidation: {consolidated_count:,}")
 print(f"  Merchants consolidated: {reduction:,} ({reduction_pct:.1f}% reduction)")
@@ -50,7 +50,6 @@ display_df = pd.DataFrame({
     'Consolidated Merchant': top_10_consolidated.index,
     'Variations': top_10_consolidated['variations'].astype(int),
     'Accounts': top_10_consolidated['unique_accounts'].astype(int),
-    'Total Spend': top_10_consolidated['total_spend'].apply(lambda x: f"${x:,.0f}"),
     'Transactions': top_10_consolidated['transaction_count'].astype(int)
 })
 
@@ -65,7 +64,7 @@ for merchant in consolidation_summary.head(3).index:
     variations = combined_df[combined_df['merchant_consolidated'] == merchant]['merchant_name'].unique()
     variation_count = len(variations)
     
-    print(f"\n📦 {merchant}")
+    print(f"\n  {merchant}")
     print(f"   Consolidated {variation_count} variations:")
     
     for i, var in enumerate(sorted(variations)[:5], 1):
@@ -75,5 +74,5 @@ for merchant in consolidation_summary.head(3).index:
         print(f"   ... and {variation_count - 5} more variations")
 
 print(f"\n" + "="*100)
-print("✓ Data preparation complete - Ready for analysis")
+print("Data preparation complete - Ready for analysis")
 print("="*100)
