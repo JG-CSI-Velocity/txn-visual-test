@@ -66,7 +66,7 @@ ax1.set_axisbelow(True)
 
 ax1.set_title('Competitive Landscape',
               fontsize=20, fontweight='bold', color=CONF_COLORS['dark_text'], pad=16, loc='left')
-ax1.text(0.0, 1.06,
+ax1.text(0.0, 0.97,
          f"Member penetration across {len(cat_agg)} categories",
          transform=ax1.transAxes, fontsize=11, color=CONF_COLORS['muted'], style='italic')
 
@@ -126,7 +126,7 @@ if len(digital_txns) > 0:
     total_db_accts = digital_txns['primary_account_num'].nunique()
     ax2.set_title('Digital Banks Deep Dive',
                   fontsize=20, fontweight='bold', color=CONF_COLORS['accent'], pad=16, loc='left')
-    ax2.text(0.0, 1.06,
+    ax2.text(0.0, 0.97,
              f"{total_db_accts:,} members ({total_db_accts / total_accounts * 100:.1f}% penetration)",
              transform=ax2.transAxes, fontsize=11, color=CONF_COLORS['muted'], style='italic')
 

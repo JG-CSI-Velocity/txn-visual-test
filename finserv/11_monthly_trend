@@ -60,7 +60,7 @@ ax1.tick_params(axis='x', rotation=45)
 
 ax1.set_title("External FinServ Activity Over Time",
               fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
-ax1.text(0.0, 1.02, "Is the money walking out the door faster or slower?",
+ax1.text(0.0, 0.97, "Is the money walking out the door faster or slower?",
          transform=ax1.transAxes, fontsize=15, color=FS_COLORS['muted'], style='italic')
 
 # Growth callout

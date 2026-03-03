@@ -136,7 +136,7 @@ if len(all_competitor_data) > 0:
         ax.set_title("Threat Quadrant",
                      fontsize=28, fontweight='bold',
                      color=CONF_COLORS['dark_text'], pad=20, loc='left')
-        ax.text(0.0, 1.02, "Bubble size = growth momentum  |  Red border = fast growers (>10%)",
+        ax.text(0.0, 0.97, "Bubble size = growth momentum  |  Red border = fast growers (>10%)",
                 transform=ax.transAxes, fontsize=13,
                 color=CONF_COLORS['muted'], style='italic')
 

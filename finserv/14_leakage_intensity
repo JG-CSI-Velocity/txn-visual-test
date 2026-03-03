@@ -49,7 +49,7 @@ ax.set_axisbelow(True)
 
 ax.set_title("Leakage Intensity: Top 50 Accounts",
              fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.02,
+ax.text(0.0, 0.97,
         "Score = 30% breadth + 30% depth + 40% recency  |  Bubble size = urgency",
         transform=ax.transAxes, fontsize=14, color=FS_COLORS['muted'], style='italic')
 

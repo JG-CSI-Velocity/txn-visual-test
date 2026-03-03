@@ -100,7 +100,7 @@ def plot_competitive_landscape_bubble(
     # ----- Title block -----
     ax.set_title(title, fontsize=26, fontweight='bold',
                  color=CONF_COLORS['dark_text'], pad=20, loc='left')
-    ax.text(0.0, 1.02, subtitle, transform=ax.transAxes,
+    ax.text(0.0, 0.97, subtitle, transform=ax.transAxes,
             fontsize=15, color=CONF_COLORS['muted'], style='italic')
 
     # ----- Legend (category colors) -----

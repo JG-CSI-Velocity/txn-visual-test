@@ -47,7 +47,7 @@ ax.set_yticklabels(ax.get_yticklabels(), fontsize=12, fontweight='bold', rotatio
 
 ax.set_title("Product Co-Occurrence Matrix",
              fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.04, "Hot cells = members using both external services. These reveal cross-sell chains.",
+ax.text(0.0, 0.97, "Hot cells = members using both external services. These reveal cross-sell chains.",
         transform=ax.transAxes, fontsize=14, color=FS_COLORS['muted'], style='italic')
 
 plt.tight_layout()

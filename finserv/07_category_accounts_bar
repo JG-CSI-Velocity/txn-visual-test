@@ -34,7 +34,7 @@ ax.set_xlim(0, cat_data['unique_accounts'].max() * 1.35)
 ax.set_title("Member Leakage by Product Category",
              fontsize=26, fontweight='bold',
              color=FS_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.02, "How many members are paying external financial service providers?",
+ax.text(0.0, 0.97, "How many members are paying external financial service providers?",
         transform=ax.transAxes, fontsize=15, color=FS_COLORS['muted'], style='italic')
 
 plt.tight_layout()

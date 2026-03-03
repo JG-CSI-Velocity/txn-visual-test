@@ -121,7 +121,7 @@ if len(all_competitor_data) > 0:
             ax.set_title("Winback Opportunities",
                          fontsize=28, fontweight='bold',
                          color=CONF_COLORS['success'], pad=20, loc='left')
-            ax.text(0.0, 1.02,
+            ax.text(0.0, 0.97,
                     "Competitors losing ground = your chance to win customers back",
                     transform=ax.transAxes, fontsize=15,
                     color=CONF_COLORS['muted'], style='italic')

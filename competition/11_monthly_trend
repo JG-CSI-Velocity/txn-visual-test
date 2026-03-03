@@ -95,7 +95,7 @@ if len(all_competitor_data) > 0:
         fontsize=26, fontweight='bold',
         color=CONF_COLORS['dark_text'], pad=20, loc='left'
     )
-    ax1.text(0.0, 1.02, "Are competitors gaining momentum with your customers?",
+    ax1.text(0.0, 0.97, "Are competitors gaining momentum with your customers?",
              transform=ax1.transAxes, fontsize=15,
              color=CONF_COLORS['muted'], style='italic')
 

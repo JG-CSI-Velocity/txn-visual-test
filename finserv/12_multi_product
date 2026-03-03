@@ -32,7 +32,7 @@ ax.set_axisbelow(True)
 
 ax.set_title("External Product Depth per Member",
              fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.02, "More categories = deeper external relationships = higher priority",
+ax.text(0.0, 0.97, "More categories = deeper external relationships = higher priority",
         transform=ax.transAxes, fontsize=15, color=FS_COLORS['muted'], style='italic')
 
 # Callout box

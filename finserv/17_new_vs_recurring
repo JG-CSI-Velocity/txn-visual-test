@@ -62,7 +62,7 @@ ax.set_xlim(0, max_total * 1.40)
 
 ax.set_title("New vs Recurring Leakage by Category",
              fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.02, "Red = members who JUST started paying external providers (< 90 days)",
+ax.text(0.0, 0.97, "Red = members who JUST started paying external providers (< 90 days)",
         transform=ax.transAxes, fontsize=14, color=FS_COLORS['muted'], style='italic')
 
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.08),

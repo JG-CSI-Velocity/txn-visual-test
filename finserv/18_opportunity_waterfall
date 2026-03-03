@@ -52,7 +52,7 @@ ax.set_axisbelow(True)
 
 ax.set_title("Product Opportunity by Category",
              fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.02,
+ax.text(0.0, 0.97,
         "Gray = total membership  |  Color = external users  |  Red = active (< 90d)",
         transform=ax.transAxes, fontsize=14, color=FS_COLORS['muted'], style='italic')
 

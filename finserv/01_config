@@ -166,7 +166,7 @@ ax.set_axisbelow(True)
 
 ax.set_title('Financial Services Detection Engine',
              fontsize=26, fontweight='bold', color=_DARK, pad=20, loc='left')
-ax.text(0.0, 1.02,
+ax.text(0.0, 0.97,
         f"{len(config_df)} categories  |  {total_patterns} total merchant patterns",
         transform=ax.transAxes, fontsize=14, color=_MUTED, style='italic')
 

@@ -44,7 +44,7 @@ ax.set_yticklabels(ax.get_yticklabels(), fontsize=14, fontweight='bold', rotatio
 
 ax.set_title("Leakage Recency Heatmap",
              fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.04, "Hot zones = active leakage you can still intercept",
+ax.text(0.0, 0.97, "Hot zones = active leakage you can still intercept",
         transform=ax.transAxes, fontsize=15, color=FS_COLORS['muted'], style='italic')
 
 plt.tight_layout()

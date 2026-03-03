@@ -49,7 +49,7 @@ if len(all_merchant_data) > 0:
 
     ax.set_title("Top 15 External Merchants by Member Reach",
                  fontsize=26, fontweight='bold', color=FS_COLORS['dark_text'], pad=20, loc='left')
-    ax.text(0.0, 1.02, "These specific companies have the most relationships with your members",
+    ax.text(0.0, 0.97, "These specific companies have the most relationships with your members",
             transform=ax.transAxes, fontsize=15, color=FS_COLORS['muted'], style='italic')
 
     # Category legend

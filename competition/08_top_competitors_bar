@@ -61,7 +61,7 @@ if len(all_competitor_data) > 0:
     ax.set_title("Top 15 Competitors by Transaction Volume",
                  fontsize=26, fontweight='bold',
                  color=CONF_COLORS['dark_text'], pad=20, loc='left')
-    ax.text(0.0, 1.02, "Where are your customers transacting?",
+    ax.text(0.0, 0.97, "Where are your customers transacting?",
             transform=ax.transAxes, fontsize=15,
             color=CONF_COLORS['muted'], style='italic')
 

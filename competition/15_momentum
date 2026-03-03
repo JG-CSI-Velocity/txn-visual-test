@@ -111,7 +111,7 @@ if len(all_competitor_data) > 0:
             ax.set_title("Competitive Momentum",
                          fontsize=28, fontweight='bold',
                          color=CONF_COLORS['dark_text'], pad=20, loc='left')
-            ax.text(0.0, 1.02, "Who is gaining?  Who is losing?",
+            ax.text(0.0, 0.97, "Who is gaining?  Who is losing?",
                     transform=ax.transAxes, fontsize=15,
                     color=CONF_COLORS['muted'], style='italic')
 

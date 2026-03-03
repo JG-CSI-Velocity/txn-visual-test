@@ -105,7 +105,7 @@ ax.set_axisbelow(True)
 
 ax.set_title('Competitor Engagement Depth',
              fontsize=20, fontweight='bold', color=CONF_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 1.06,
+ax.text(0.0, 0.97,
         "What share of member transactions go to each competitor?",
         transform=ax.transAxes, fontsize=11, color=CONF_COLORS['muted'], style='italic')
 
