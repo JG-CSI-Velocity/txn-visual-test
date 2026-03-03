@@ -1,0 +1,124 @@
+# ===========================================================================
+# CELL 9: TOTAL SPEND vs COMPETITOR SPEND ANALYSIS
+# ===========================================================================
+"""
+## Competitor Analysis - Total Spend vs Competitor Spend
+"""
+
+competitor_spend_analysis = {}
+
+for competitor, competitor_trans in all_competitor_data.items():
+    print(f"\n{'='*100}")
+    print(f"SPEND ANALYSIS: {competitor}")
+    print(f"{'='*100}\n")
+    
+    # Get list of accounts with competitor transactions
+    competitor_accounts = competitor_trans['primary_account_num'].unique()
+    
+    # Get ALL transactions for these accounts
+    all_spend_for_accounts = combined_df[
+        combined_df['primary_account_num'].isin(competitor_accounts)
+    ].copy()
+    
+    # Calculate total spend by account
+    total_spend_summary = all_spend_for_accounts.groupby('primary_account_num').agg({
+        'amount': ['sum', 'count'],
+        'transaction_date': ['min', 'max']
+    }).round(2)
+    
+    total_spend_summary.columns = ['total_spend', 'total_transactions', 'first_date', 'last_date']
+    
+    # Get competitor spend by account (from our earlier analysis)
+    account_summary = all_account_summaries[competitor]
+    
+    # Merge to compare
+    comparison = pd.DataFrame({
+        'Total_Spend': total_spend_summary['total_spend'],
+        'Total_Transactions': total_spend_summary['total_transactions'],
+        'Competitor_Spend': account_summary['Total Amount'],
+        'Competitor_Transactions': account_summary['Transaction Count']
+    })
+    
+    # Calculate other (non-competitor) spend
+    comparison['Other_Spend'] = comparison['Total_Spend'] - comparison['Competitor_Spend']
+    comparison['Other_Transactions'] = comparison['Total_Transactions'] - comparison['Competitor_Transactions']
+    
+    # Calculate percentages
+    comparison['Competitor_Pct'] = (comparison['Competitor_Spend'] / comparison['Total_Spend'] * 100).round(1)
+    comparison['Other_Pct'] = (comparison['Other_Spend'] / comparison['Total_Spend'] * 100).round(1)
+    
+    # Sort by total spend
+    comparison = comparison.sort_values('Total_Spend', ascending=False)
+    
+    # Create segments
+    comparison['Segment'] = 'Mixed'
+    comparison.loc[comparison['Competitor_Pct'] >= 80, 'Segment'] = 'Competitor-Heavy (80%+)'
+    comparison.loc[comparison['Competitor_Pct'] < 20, 'Segment'] = 'Minimal Competitor (<20%)'
+    comparison.loc[(comparison['Competitor_Pct'] >= 20) & (comparison['Competitor_Pct'] < 80), 'Segment'] = 'Mixed (20-80%)'
+    
+    # Display top 25
+    display_comparison = comparison.head(25).copy()
+    display_comparison['Total_Spend'] = display_comparison['Total_Spend'].apply(lambda x: f"${x:,.2f}")
+    display_comparison['Competitor_Spend'] = display_comparison['Competitor_Spend'].apply(lambda x: f"${x:,.2f}")
+    display_comparison['Other_Spend'] = display_comparison['Other_Spend'].apply(lambda x: f"${x:,.2f}")
+    display_comparison['Competitor_Pct'] = display_comparison['Competitor_Pct'].apply(lambda x: f"{x:.1f}%")
+    display_comparison['Other_Pct'] = display_comparison['Other_Pct'].apply(lambda x: f"{x:.1f}%")
+    
+    print("Top 25 Accounts - Total vs Competitor Spend:")
+    display(display_comparison[['Total_Spend', 'Total_Transactions', 'Competitor_Spend', 
+                                'Competitor_Transactions', 'Other_Spend', 'Other_Transactions', 
+                                'Competitor_Pct', 'Segment']])
+    
+    # Segment summary
+    segment_summary = comparison.groupby('Segment').agg({
+        'Total_Spend': ['count', 'sum', 'mean'],
+        'Competitor_Spend': ['sum', 'mean'],
+        'Other_Spend': ['sum', 'mean']
+    }).round(2)
+    
+    segment_summary.columns = ['Account_Count', 'Total_Spend_Sum', 'Total_Spend_Avg',
+                               'Competitor_Spend_Sum', 'Competitor_Spend_Avg',
+                               'Other_Spend_Sum', 'Other_Spend_Avg']
+    
+    segment_summary = segment_summary.reset_index()
+    
+    # Format for display
+    display_segments = segment_summary.copy()
+    for col in ['Total_Spend_Sum', 'Total_Spend_Avg', 'Competitor_Spend_Sum', 
+                'Competitor_Spend_Avg', 'Other_Spend_Sum', 'Other_Spend_Avg']:
+        display_segments[col] = display_segments[col].apply(lambda x: f"${x:,.2f}")
+    
+    print(f"\nSegment Summary:")
+    display(display_segments)
+    
+    # Key insights
+    competitor_heavy = len(comparison[comparison['Competitor_Pct'] >= 80])
+    minimal_competitor = len(comparison[comparison['Competitor_Pct'] < 20])
+    total_accounts = len(comparison)
+    
+    insights = pd.DataFrame({
+        'Insight': [
+            'Total Accounts Analyzed',
+            'Competitor-Heavy (80%+ at competitor)',
+            'Minimal Competitor (<20% at competitor)',
+            'Mixed Spending (20-80%)',
+            '',
+            'AT RISK: High competitor spend',
+            'OPPORTUNITY: Low competitor spend'
+        ],
+        'Value': [
+            f"{total_accounts:,}",
+            f"{competitor_heavy:,} ({competitor_heavy/total_accounts*100:.1f}%)",
+            f"{minimal_competitor:,} ({minimal_competitor/total_accounts*100:.1f}%)",
+            f"{len(comparison[(comparison['Competitor_Pct'] >= 20) & (comparison['Competitor_Pct'] < 80)]):,}",
+            '',
+            f"{competitor_heavy:,} accounts to retain",
+            f"{minimal_competitor:,} accounts to grow"
+        ]
+    })
+    
+    print(f"\nKey Insights:")
+    display(insights)
+    
+    # Store for export and visualization
+    competitor_spend_analysis[competitor] = comparison
