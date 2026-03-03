@@ -74,13 +74,19 @@ try:
 
         camp_summary = pd.DataFrame(periods)
 
-        # Sort chronologically: parse MmmYY into sortable date
+        # Sort chronologically: parse MmmYY into sortable integer
+        _MONTH_ABBR = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
+                       'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
+
         def _period_sort_key(label):
-            """Convert 'Apr25' -> sortable date for chronological ordering."""
+            """Convert 'Apr25' -> sortable int (YYYYMM) for chronological ordering."""
             try:
-                return pd.to_datetime(label, format='%b%y')
-            except Exception:
-                return pd.Timestamp('2099-01-01')
+                mon_abbr = label[:3]
+                yr_2d = int(label[3:])
+                yr_4d = 2000 + yr_2d
+                return yr_4d * 100 + _MONTH_ABBR.get(mon_abbr, 0)
+            except (ValueError, IndexError):
+                return 999999
 
         camp_summary['_sort'] = camp_summary['period'].apply(_period_sort_key)
         camp_summary = camp_summary.sort_values('_sort').drop(columns='_sort').reset_index(drop=True)
