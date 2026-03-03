@@ -26,7 +26,8 @@ if len(consistency_df) > 0:
         ax1.text(row['cv'] + 1, j, f"{row['cv']:.0f}%",
                  va='center', fontsize=10, fontweight='bold', color=GEN_COLORS['info'])
 
-    # --- RIGHT: Most volatile (high CV, capped at 300% for display) ---
+    # --- RIGHT: Most volatile (high CV) ---
+    # CV already capped at 500% in 01_merchant_data; display cap at 300% for readability
     vol_plot = most_volatile.sort_values('cv', ascending=True).copy()
     vol_plot['cv_display'] = vol_plot['cv'].clip(upper=300)
 
@@ -35,7 +36,7 @@ if len(consistency_df) > 0:
     ax2.set_yticks(range(len(vol_plot)))
     ax2.set_yticklabels(vol_plot['merchant_consolidated'].str[:25], fontsize=11, fontweight='bold')
     ax2.set_xlabel("CV %  (higher = more volatile)", fontsize=13, fontweight='bold', labelpad=8)
-    ax2.set_xlim(0, 330)
+    ax2.set_xlim(0, 350)
     gen_clean_axes(ax2, keep_left=True, keep_bottom=True)
     ax2.xaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
     ax2.set_axisbelow(True)
@@ -43,14 +44,15 @@ if len(consistency_df) > 0:
                    color=GEN_COLORS['warning'], pad=12)
 
     for j, (_, row) in enumerate(vol_plot.iterrows()):
-        label = f"{row['cv']:.0f}%" if row['cv'] <= 300 else f"{row['cv']:.0f}%*"
-        ax2.text(min(row['cv_display'], 295) + 3, j, label,
+        label = f"{row['cv']:.0f}%"
+        x_pos = min(row['cv_display'], 300) + 5
+        ax2.text(x_pos, j, label,
                  va='center', fontsize=10, fontweight='bold', color=GEN_COLORS['warning'])
 
     fig.suptitle("Merchant Spend Consistency",
                  fontsize=26, fontweight='bold',
                  color=GEN_COLORS['dark_text'], y=1.04)
-    fig.text(0.5, 0.96, "Coefficient of variation: stable revenue partners vs spiky merchants ($10K+ spend, 3+ months)",
+    fig.text(0.5, 0.96, "Coefficient of variation: stable vs spiky merchants ($10K+ spend, 3+ months, CV capped at 500%)",
              ha='center', fontsize=13, color=GEN_COLORS['muted'], style='italic')
 
     plt.tight_layout()

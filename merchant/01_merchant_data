@@ -56,8 +56,8 @@ consist_rows = []
 for merchant in m_pivot.index:
     vals = m_pivot.loc[merchant].values
     nonzero = vals[vals > 0]
-    if len(nonzero) >= 3:
-        cv = (nonzero.std() / nonzero.mean() * 100) if nonzero.mean() > 0 else 0
+    if len(nonzero) >= 3 and nonzero.mean() > 0:
+        cv = nonzero.std() / nonzero.mean() * 100
         consist_rows.append({
             'merchant_consolidated': merchant,
             'total_spend': nonzero.sum(),
@@ -68,6 +68,10 @@ for merchant in m_pivot.index:
 
 consistency_df = pd.DataFrame(consist_rows)
 consistency_df = consistency_df[consistency_df['total_spend'] >= 10000].copy()
+
+# Cap CV at 500% to prevent renderer overflow from extreme outliers
+if len(consistency_df) > 0:
+    consistency_df['cv'] = consistency_df['cv'].clip(upper=500)
 
 # ---------------------------------------------------------------------------
 # Merchant cohort (new / returning / lost per month)
