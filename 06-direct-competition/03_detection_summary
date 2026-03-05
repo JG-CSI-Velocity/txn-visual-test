@@ -25,7 +25,7 @@ else:
     print(f"\nSearched {len(combined_df):,} transactions")
     print(f"  Competitor transactions: {total_comp_txns:,} ({pct_comp_txns:.1f}% of total)")
     print(f"  Unique accounts:         {total_comp_accounts:,} ({pct_comp_accounts:.1f}% of {total_accounts:,})")
-    print(f"  Unique patterns matched: {competitor_txns['competitor_match'].nunique()}")
+    print(f"  Unique patterns matched: {competitor_txns['merchant_consolidated'].nunique()}")
 
     # Category breakdown
     print(f"\nBy Category:")
