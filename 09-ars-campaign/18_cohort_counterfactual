@@ -21,7 +21,12 @@ else:
         mail_col = wc['mail_col'].strip()
         resp_col = wc['resp_col'].strip()
         was_mailed = rewards_df[mail_col].notna()
-        was_responded = rewards_df[resp_col].notna() if resp_col in [c.strip() for c in rewards_df.columns] else pd.Series(False, index=rewards_df.index)
+        # TH-* or NU 5+ = true responder
+        if resp_col in [c.strip() for c in rewards_df.columns]:
+            _rv = rewards_df[resp_col]
+            was_responded = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper().startswith('TH') or str(v).strip().upper() in ('NU 5+','NU5+','NU 5','NU 6','NU 7','NU 8','NU 9','NU 10'))
+        else:
+            was_responded = pd.Series(False, index=rewards_df.index)
         resp_indices = set(rewards_df.index[was_mailed & was_responded])
         wave_resp_info[wave_label] = {
             'resp_indices': resp_indices,
@@ -69,7 +74,7 @@ else:
                                 rewards_df.loc[idx, pre_cols], errors='coerce'
                             ).mean()
                             if pd.notna(resp_pre) and resp_pre > 0:
-                                cf_spend.iloc[idx] = resp_pre * change_ratio
+                                cf_spend.loc[idx] = resp_pre * change_ratio
 
         counterfactual_monthly.append({'month': m, 'month_date': month_date, 'spend': cf_spend.sum()})
 
