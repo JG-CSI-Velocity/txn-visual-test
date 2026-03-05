@@ -70,7 +70,7 @@ else:
         _last_m = migration_tier_df.columns[-1]
 
         for _status in ['Responder', 'Non-Responder']:
-            _mask = migration_tier_df.index.map(lambda x: _camp_map.get(x) == _status)
+            _mask = pd.Series(migration_tier_df.index.map(lambda x: _camp_map.get(x) == _status), index=migration_tier_df.index)
             if _mask.sum() > 0:
                 _from = migration_tier_df.loc[_mask, _first_m].map(_tier_rank)
                 _to = migration_tier_df.loc[_mask, _last_m].map(_tier_rank)
