@@ -4,7 +4,9 @@
 # Grouped bar: top 8 MCCs, share by engagement tier. (14,7).
 # Uses acct_txn_counts from general/17_engagement_data.
 
-if 'acct_txn_counts' not in dir() or len(acct_txn_counts) == 0:
+if 'mcc_agg' not in dir() or len(mcc_agg) == 0:
+    print("    No MCC data available. Skipping MCC by engagement tier.")
+elif 'acct_txn_counts' not in dir() or len(acct_txn_counts) == 0:
     print("    No engagement data available. Skipping MCC by engagement tier.")
 else:
     # Merge engagement tier onto transactions

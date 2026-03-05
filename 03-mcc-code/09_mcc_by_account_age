@@ -4,8 +4,12 @@
 # Heatmap: top 12 MCC x account age band. (14,8).
 # Uses lifecycle_df from general/23_account_age_data.
 
-if 'lifecycle_df' not in dir() or len(lifecycle_df) == 0:
+if 'mcc_agg' not in dir() or len(mcc_agg) == 0:
+    print("    No MCC data available. Skipping MCC by account age heatmap.")
+elif 'lifecycle_df' not in dir() or len(lifecycle_df) == 0:
     print("    No lifecycle data available. Skipping MCC by account age heatmap.")
+elif 'mcc_code' not in combined_df.columns:
+    print("    No mcc_code column available. Skipping MCC by account age heatmap.")
 else:
     lifecycle_mcc = lifecycle_df[lifecycle_df['acct_age_band'].notna()].copy()
 
