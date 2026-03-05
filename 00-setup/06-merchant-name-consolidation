@@ -10,6 +10,10 @@ def standardize_merchant_name(merchant_name):
     Consolidate duplicate merchant variations across all clients.
     Returns standardized merchant name for cleaner analysis.
     """
+    # Handle NaN / empty merchant names
+    if pd.isna(merchant_name) or str(merchant_name).strip() in ('', 'NAN', 'NONE'):
+        return 'UNKNOWN MERCHANT'
+
     # Normalize: strip whitespace, convert to uppercase
     merchant_upper = str(merchant_name).strip().upper()
     

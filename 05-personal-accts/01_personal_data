@@ -5,16 +5,12 @@
 # Builds: pers_agg, pers_top20, pers_monthly, pers_consistency_df, pers_cohort_df.
 
 # ---------------------------------------------------------------------------
-# Filter out rows with NaN merchant names or missing year_month
+# Safety: fill any remaining NaN merchant names
 # ---------------------------------------------------------------------------
-_pers_before = len(personal_df)
-personal_df = personal_df[
-    personal_df['merchant_consolidated'].notna() &
-    personal_df['year_month'].notna()
-].copy()
-_pers_dropped = _pers_before - len(personal_df)
-if _pers_dropped > 0:
-    print(f"    Filtered {_pers_dropped:,} rows with NaN merchant/month")
+_pers_nan = personal_df['merchant_consolidated'].isna().sum()
+if _pers_nan > 0:
+    personal_df['merchant_consolidated'] = personal_df['merchant_consolidated'].fillna('UNKNOWN MERCHANT')
+    print(f"    Filled {_pers_nan:,} NaN merchant names with 'UNKNOWN MERCHANT'")
 
 # ---------------------------------------------------------------------------
 # Core merchant aggregation (personal accounts only)
