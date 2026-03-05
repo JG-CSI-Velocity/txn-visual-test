@@ -112,7 +112,7 @@ try:
         if resp_available:
             _rv = rewards_df[resp_col]
             was_responded = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper().startswith('TH') or str(v).strip().upper() in ('NU 5+','NU5+','NU 5','NU 6','NU 7','NU 8','NU 9','NU 10'))
-            was_near_use = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper() in ('NU 1','NU 2','NU 3','NU 4','NU1','NU2','NU3','NU4'))
+            was_near_use = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper() in ('NU 1-4','NU1-4'))
         else:
             was_responded = pd.Series(False, index=rewards_df.index)
             was_near_use = pd.Series(False, index=rewards_df.index)
@@ -247,7 +247,7 @@ try:
             if resp_col in rewards_cols:
                 _rv = rewards_df[resp_col]
                 was_responded = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper().startswith('TH') or str(v).strip().upper() in ('NU 5+','NU5+','NU 5','NU 6','NU 7','NU 8','NU 9','NU 10'))
-                was_near_use = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper() in ('NU 1','NU 2','NU 3','NU 4','NU1','NU2','NU3','NU4'))
+                was_near_use = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper() in ('NU 1-4','NU1-4'))
             else:
                 was_responded = pd.Series(False, index=rewards_df.index)
                 was_near_use = pd.Series(False, index=rewards_df.index)

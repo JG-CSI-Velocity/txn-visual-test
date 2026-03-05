@@ -58,7 +58,7 @@ try:
             if pd.isna(val):
                 return False
             v = str(val).strip().upper()
-            return v in ('NU 1', 'NU 2', 'NU 3', 'NU 4', 'NU1', 'NU2', 'NU3', 'NU4')
+            return v in ('NU 1-4', 'NU1-4')
 
         _is_true_resp = _resp_values.apply(lambda col: col.map(_is_success))
         _is_nu = _resp_values.apply(lambda col: col.map(_is_near_use))
