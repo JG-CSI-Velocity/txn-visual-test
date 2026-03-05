@@ -407,6 +407,25 @@ CLIENT_CONFIGS = {
         ],
         'custom': [],
     },
+    '1615': {  # Cape & Coast Bank (Cape Cod, MA)
+        'fed_district': '1',
+        'credit_unions': [
+            'FIRST CITIZENS FEDERAL CREDIT UNION', "FIRST CITIZENS' FEDERAL CREDIT UNION",
+            'BRIGHTBRIDGE CREDIT UNION', 'MERRIMACK VALLEY CREDIT UNION',
+            'ROCKLAND FEDERAL CREDIT UNION',
+            'NAVY FEDERAL CREDIT UNION', 'NAVY FEDERAL CU',
+        ],
+        'local_banks': [
+            'CAPE COD FIVE', 'CAPE COD 5', 'CAPE COD FIVE CENTS',
+            'EASTERN BANK',
+            'ROCKLAND TRUST',
+            'BLUESTONE BANK',
+            "SEAMEN'S BANK", 'SEAMENS BANK',
+            "MARTHA'S VINEYARD SAVINGS BANK", 'MARTHAS VINEYARD SAVINGS',
+            'MV BANK',
+        ],
+        'custom': [],
+    },
 
     # Template for new clients -- copy and fill in:
     # 'XXXX': {  # Client Name (Location)
