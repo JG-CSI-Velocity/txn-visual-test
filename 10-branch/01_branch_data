@@ -5,6 +5,38 @@
 # Guard: try/except for missing Branch column in ODDD.
 
 try:
+    import json, os
+
+    # ------------------------------------------------------------------
+    # Load branch name mapping from JSON config (branch number -> name)
+    # Expected format: {"1": "Main Office", "2": "West Branch", ...}
+    # Place file as branch_config.json in repo root or 10-branch/ folder.
+    # ------------------------------------------------------------------
+    BRANCH_NAME_MAP = {}
+    _br_config_paths = [
+        os.path.join(os.path.dirname(os.getcwd()), 'branch_config.json'),
+        os.path.join(os.getcwd(), 'branch_config.json'),
+        'branch_config.json',
+        os.path.join('10-branch', 'branch_config.json'),
+    ]
+    # Also check the notebook's directory if running from Jupyter
+    try:
+        _nb_dir = os.path.dirname(os.path.abspath(''))
+        _br_config_paths.append(os.path.join(_nb_dir, 'branch_config.json'))
+    except Exception:
+        pass
+
+    for _cfg_path in _br_config_paths:
+        if os.path.exists(_cfg_path):
+            with open(_cfg_path, 'r') as _f:
+                BRANCH_NAME_MAP = json.load(_f)
+            print(f"    Branch config loaded: {_cfg_path} ({len(BRANCH_NAME_MAP)} branches)")
+            break
+
+    if not BRANCH_NAME_MAP:
+        print("    WARNING: branch_config.json not found. Branch names will show as numbers.")
+        print("    Place branch_config.json in repo root with format: {\"1\": \"Main Office\", ...}")
+
     # Merge Branch onto combined_df
     br_subset = rewards_df[['Acct Number', 'Branch']].copy()
     br_subset.columns = ['account_number', 'branch']
@@ -28,6 +60,22 @@ try:
     # Filter to records with branch data
     br_df = br_merged[br_merged['branch'].notna()].copy()
     br_df['branch'] = br_df['branch'].astype(str).str.strip()
+
+    # Apply branch name mapping if config was loaded
+    if BRANCH_NAME_MAP:
+        # Try mapping with raw value, then stripped of decimals (e.g. "1.0" -> "1")
+        def _map_branch(val):
+            if val in BRANCH_NAME_MAP:
+                return BRANCH_NAME_MAP[val]
+            clean = val.split('.')[0]  # "1.0" -> "1"
+            if clean in BRANCH_NAME_MAP:
+                return BRANCH_NAME_MAP[clean]
+            return val  # Fallback: keep original number
+
+        br_df['branch'] = br_df['branch'].apply(_map_branch)
+        combined_df['branch'] = combined_df['branch'].astype(str).str.strip().apply(_map_branch)
+        n_mapped = (br_df['branch'] != br_df['branch'].str.replace(r'\D', '', regex=True)).sum()
+        print(f"    Branch names mapped: {br_df['branch'].nunique()} unique branches")
 
     if len(br_df) == 0:
         print("    All branch values are null. Skipping branch analysis.")
