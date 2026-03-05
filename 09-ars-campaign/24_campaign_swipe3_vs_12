@@ -5,7 +5,7 @@
 # Left = Responders, Right = Non-Responders. (16,7).
 # Diagonal = stable behavior. Above-diagonal = improving.
 
-if 'swipe_lookup' not in dir() or len(swipe_lookup) == 0:
+if 'swipe_lookup' not in dir() or not isinstance(swipe_lookup, pd.DataFrame) or len(swipe_lookup) == 0:
     print("    No swipe category data available. Skipping migration matrix.")
 elif 'camp_acct' not in dir() or len(camp_acct) == 0:
     print("    No campaign data available. Skipping migration matrix.")

@@ -4,7 +4,7 @@
 # 4 FancyBboxPatch cards. (18,5).
 # Depends on swipe_lookup from general/29_swipe_category_data.
 
-if 'swipe_lookup' not in dir() or len(swipe_lookup) == 0:
+if 'swipe_lookup' not in dir() or not isinstance(swipe_lookup, pd.DataFrame) or len(swipe_lookup) == 0:
     print("    No swipe category data available. Skipping swipe KPI dashboard.")
 elif 'camp_acct' not in dir() or len(camp_acct) == 0:
     print("    No campaign data available. Skipping swipe KPI dashboard.")
