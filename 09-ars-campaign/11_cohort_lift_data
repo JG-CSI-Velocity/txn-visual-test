@@ -108,11 +108,11 @@ try:
             continue
 
         was_mailed = rewards_df[mail_col].notna()
-        # Only TH-* values count as true responders; NU* = near-use
+        # TH-* or NU 5+ = success; NU 1-4 = near-use
         if resp_available:
-            _resp_val = rewards_df[resp_col].astype(str).str.strip().str.upper()
-            was_responded = _resp_val.str.startswith('TH') & rewards_df[resp_col].notna()
-            was_near_use = _resp_val.str.startswith('NU') & rewards_df[resp_col].notna()
+            _rv = rewards_df[resp_col]
+            was_responded = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper().startswith('TH') or str(v).strip().upper() in ('NU 5+','NU5+','NU 5','NU 6','NU 7','NU 8','NU 9','NU 10'))
+            was_near_use = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper() in ('NU 1','NU 2','NU 3','NU 4','NU1','NU2','NU3','NU4'))
         else:
             was_responded = pd.Series(False, index=rewards_df.index)
             was_near_use = pd.Series(False, index=rewards_df.index)
@@ -245,9 +245,9 @@ try:
             resp_col = wc['resp_col'].strip()
             was_mailed = rewards_df[mail_col].notna()
             if resp_col in rewards_cols:
-                _rv = rewards_df[resp_col].astype(str).str.strip().str.upper()
-                was_responded = _rv.str.startswith('TH') & rewards_df[resp_col].notna()
-                was_near_use = _rv.str.startswith('NU') & rewards_df[resp_col].notna()
+                _rv = rewards_df[resp_col]
+                was_responded = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper().startswith('TH') or str(v).strip().upper() in ('NU 5+','NU5+','NU 5','NU 6','NU 7','NU 8','NU 9','NU 10'))
+                was_near_use = _rv.map(lambda v: False if pd.isna(v) else str(v).strip().upper() in ('NU 1','NU 2','NU 3','NU 4','NU1','NU2','NU3','NU4'))
             else:
                 was_responded = pd.Series(False, index=rewards_df.index)
                 was_near_use = pd.Series(False, index=rewards_df.index)

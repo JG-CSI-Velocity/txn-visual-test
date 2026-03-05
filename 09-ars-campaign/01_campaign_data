@@ -35,19 +35,36 @@ try:
         # Count non-null mail entries (mailed = has a value)
         camp_acct['times_mailed'] = camp_raw[mail_cols].notna().sum(axis=1)
 
-        # Classify each resp column value: TH-* = true response, NU* = near-use
-        # Response values: TH-10, TH-15, TH-20, TH-25 = hit threshold (responder)
-        #                  NU, NU 1-4 = near use (changed behavior, missed goal)
+        # Classify each resp column value:
+        #   TH-10/15/20/25 = hit threshold challenge (responder/success)
+        #   NU 5+          = non-user activated 5+ swipes (responder/success)
+        #   NU 1-4         = non-user started but missed 5+ goal (near-use)
+        #   null/blank     = no response (non-responder)
         _resp_values = camp_raw[resp_cols].copy()
-        _is_true_resp = _resp_values.apply(
-            lambda col: col.astype(str).str.strip().str.upper().str.startswith('TH') & col.notna()
-        )
-        _is_near_use = _resp_values.apply(
-            lambda col: col.astype(str).str.strip().str.upper().str.startswith('NU') & col.notna()
-        )
+
+        def _is_success(val):
+            """TH-* or NU 5+ = success."""
+            if pd.isna(val):
+                return False
+            v = str(val).strip().upper()
+            if v.startswith('TH'):
+                return True
+            if v in ('NU 5+', 'NU5+', 'NU 5', 'NU 6', 'NU 7', 'NU 8', 'NU 9', 'NU 10'):
+                return True
+            return False
+
+        def _is_near_use(val):
+            """NU 1-4 = near use (changed behavior, missed goal)."""
+            if pd.isna(val):
+                return False
+            v = str(val).strip().upper()
+            return v in ('NU 1', 'NU 2', 'NU 3', 'NU 4', 'NU1', 'NU2', 'NU3', 'NU4')
+
+        _is_true_resp = _resp_values.apply(lambda col: col.map(_is_success))
+        _is_nu = _resp_values.apply(lambda col: col.map(_is_near_use))
 
         camp_acct['times_responded'] = _is_true_resp.sum(axis=1)
-        camp_acct['times_near_use'] = _is_near_use.sum(axis=1)
+        camp_acct['times_near_use'] = _is_nu.sum(axis=1)
 
         # Also use # of Offers if available
         if '# of Offers' in camp_raw.columns:
@@ -75,9 +92,8 @@ try:
         for mc, rc in zip(mail_cols, resp_cols):
             period_label = mc.replace(' Mail', '')
             mailed_count = camp_raw[mc].notna().sum()
-            _rv = camp_raw[rc].dropna().astype(str).str.strip().str.upper()
-            responded_count = _rv.str.startswith('TH').sum()
-            near_use_count = _rv.str.startswith('NU').sum()
+            responded_count = camp_raw[rc].map(_is_success).sum()
+            near_use_count = camp_raw[rc].map(_is_near_use).sum()
             rate = responded_count / mailed_count * 100 if mailed_count > 0 else 0
             periods.append({
                 'period': period_label,
@@ -192,20 +208,19 @@ try:
               f"({n_near_use:,} changed behavior but missed goal)" if n_mailed > 0 else "")
 
         # Per-period value breakdown for validation
-        print(f"\n    {'Period':<10} {'Mailed':>8} {'TH':>6} {'NU':>6} {'Other':>6} {'Null':>8}  Response Values")
-        print(f"    {'-'*70}")
+        print(f"\n    {'Period':<10} {'Mailed':>8} {'Success':>8} {'NearUse':>8} {'NoResp':>8}  Response Values")
+        print(f"    {'-'*75}")
         for mc, rc in zip(mail_cols, resp_cols):
             period_label = mc.replace(' Mail', '')
             _mailed = camp_raw[mc].notna().sum()
             _all_resp = camp_raw[rc]
-            _null = _all_resp.isna().sum()
+            _success = _all_resp.map(_is_success).sum()
+            _nu = _all_resp.map(_is_near_use).sum()
+            _no_resp = _mailed - _success - _nu
             _vals = _all_resp.dropna().astype(str).str.strip().str.upper()
-            _th = _vals.str.startswith('TH').sum()
-            _nu = _vals.str.startswith('NU').sum()
-            _other = len(_vals) - _th - _nu
-            _val_counts = _vals.value_counts().head(6).to_dict()
+            _val_counts = _vals.value_counts().head(8).to_dict()
             _val_str = ', '.join(f"{v}={c}" for v, c in _val_counts.items())
-            print(f"    {period_label:<10} {_mailed:>8,} {_th:>6,} {_nu:>6,} {_other:>6,} {_null:>8,}  {_val_str}")
+            print(f"    {period_label:<10} {_mailed:>8,} {_success:>8,} {_nu:>8,} {_no_resp:>8,}  {_val_str}")
 
 except (NameError, KeyError) as e:
     print(f"    Campaign data not available: {e}")
