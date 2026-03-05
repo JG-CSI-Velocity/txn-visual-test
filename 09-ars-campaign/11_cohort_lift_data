@@ -122,21 +122,21 @@ try:
         if len(pre_spend_cols) == 0 or len(post_spend_cols) == 0:
             continue
 
-        pre_spend_vals = pd.to_numeric(
-            rewards_df[pre_spend_cols].stack(), errors='coerce'
-        ).unstack().mean(axis=1).fillna(0)
+        pre_spend_vals = rewards_df[pre_spend_cols].apply(
+            pd.to_numeric, errors='coerce'
+        ).mean(axis=1).fillna(0)
 
-        post_spend_vals = pd.to_numeric(
-            rewards_df[post_spend_cols].stack(), errors='coerce'
-        ).unstack().mean(axis=1).fillna(0)
+        post_spend_vals = rewards_df[post_spend_cols].apply(
+            pd.to_numeric, errors='coerce'
+        ).mean(axis=1).fillna(0)
 
-        pre_swipe_vals = pd.to_numeric(
-            rewards_df[pre_swipe_cols].stack(), errors='coerce'
-        ).unstack().mean(axis=1).fillna(0) if len(pre_swipe_cols) > 0 else pd.Series(0, index=rewards_df.index)
+        pre_swipe_vals = rewards_df[pre_swipe_cols].apply(
+            pd.to_numeric, errors='coerce'
+        ).mean(axis=1).fillna(0) if len(pre_swipe_cols) > 0 else pd.Series(0, index=rewards_df.index)
 
-        post_swipe_vals = pd.to_numeric(
-            rewards_df[post_swipe_cols].stack(), errors='coerce'
-        ).unstack().mean(axis=1).fillna(0) if len(post_swipe_cols) > 0 else pd.Series(0, index=rewards_df.index)
+        post_swipe_vals = rewards_df[post_swipe_cols].apply(
+            pd.to_numeric, errors='coerce'
+        ).mean(axis=1).fillna(0) if len(post_swipe_cols) > 0 else pd.Series(0, index=rewards_df.index)
 
         # Build rows for mailed accounts only
         mask = was_mailed
@@ -232,8 +232,8 @@ try:
             was_mailed = rewards_df[mail_col].notna()
             was_responded = rewards_df[resp_col].notna() if resp_col in rewards_cols else pd.Series(False, index=rewards_df.index)
 
-            pre_vals = pd.to_numeric(rewards_df[pre_s_cols].stack(), errors='coerce').unstack().mean(axis=1).fillna(0)
-            post_vals = pd.to_numeric(rewards_df[post_s_cols].stack(), errors='coerce').unstack().mean(axis=1).fillna(0)
+            pre_vals = rewards_df[pre_s_cols].apply(pd.to_numeric, errors='coerce').mean(axis=1).fillna(0)
+            post_vals = rewards_df[post_s_cols].apply(pd.to_numeric, errors='coerce').mean(axis=1).fillna(0)
 
             for label, mask in [('Responder', was_mailed & was_responded),
                                 ('Non-Responder', was_mailed & ~was_responded)]:
