@@ -160,7 +160,9 @@ else:
                       label='Prior NU 1-4 Converted', zorder=5)
             ax2b.set_ylabel("Prior NU 1-4 Converted to NU 5+", fontsize=11,
                             fontweight='bold', color=GEN_COLORS['accent'], labelpad=10)
-            gen_clean_axes(ax2b, keep_right=True)
+            ax2b.spines['top'].set_visible(False)
+            ax2b.spines['left'].set_visible(False)
+            ax2b.grid(False)
             ax2b.legend(loc='upper right', fontsize=10)
 
         ax2.set_xticks(list(x))
