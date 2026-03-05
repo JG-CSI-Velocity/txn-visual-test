@@ -15,12 +15,7 @@ CATEGORY_PALETTE = {
     'Bnpl':                 '#E76F51',
 }
 
-def clean_category(cat_str):
-    """'big_nationals' -> 'Big Nationals', 'top_25_fed_district' -> 'Top 25 Fed District'"""
-    if not isinstance(cat_str, str):
-        return str(cat_str)
-    return cat_str.replace('_', ' ').title()
-
+# Re-bind get_cat_color now that CATEGORY_PALETTE exists
 def get_cat_color(cat_label):
     """Return palette color for a cleaned category label."""
     return CATEGORY_PALETTE.get(cat_label, GEN_COLORS['muted'])

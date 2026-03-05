@@ -586,6 +586,20 @@ def discover_unmatched_financial(df, merchant_col='merchant_consolidated', top_n
 
 
 # ---------------------------------------------------------------------------
+# Category helpers
+# ---------------------------------------------------------------------------
+def clean_category(cat_str):
+    """'big_nationals' -> 'Big Nationals', 'top_25_fed_district' -> 'Top 25 Fed District'"""
+    if not isinstance(cat_str, str):
+        return str(cat_str)
+    return cat_str.replace('_', ' ').title()
+
+def get_cat_color(cat_label):
+    """Return palette color for a cleaned category label.
+    CATEGORY_PALETTE must be defined in 06_conference_theme before use."""
+    return CATEGORY_PALETTE.get(cat_label, GEN_COLORS['muted']) if 'CATEGORY_PALETTE' in dir() else GEN_COLORS['muted']
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 _client_name = CLIENT_NAME if 'CLIENT_NAME' in dir() else 'Unknown'
