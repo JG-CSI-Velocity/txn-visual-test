@@ -37,11 +37,20 @@ tt_sig_avg_ticket = tt_sig_avg[0] if len(tt_sig_avg) > 0 else 0
 # ---------------------------------------------------------------------------
 tt_monthly = combined_df.groupby(
     ['year_month', 'transaction_type']
-).agg(txn_count=('transaction_date', 'count')).reset_index()
+).agg(
+    txn_count=('transaction_date', 'count'),
+    total_spend=('amount', 'sum'),
+    avg_ticket=('amount', 'mean'),
+    unique_accounts=('primary_account_num', 'nunique'),
+).reset_index()
 
-tt_month_totals = combined_df.groupby('year_month').size().reset_index(name='month_total')
+tt_month_totals = combined_df.groupby('year_month').agg(
+    month_total=('transaction_date', 'count'),
+    month_spend=('amount', 'sum'),
+).reset_index()
 tt_monthly = tt_monthly.merge(tt_month_totals, on='year_month')
 tt_monthly['share_pct'] = tt_monthly['txn_count'] / tt_monthly['month_total'] * 100
+tt_monthly['spend_share_pct'] = tt_monthly['total_spend'] / tt_monthly['month_spend'] * 100
 
 # ---------------------------------------------------------------------------
 # Merchant-level PIN vs SIG pivot (top 50 merchants)
