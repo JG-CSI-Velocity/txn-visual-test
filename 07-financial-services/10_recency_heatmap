@@ -25,14 +25,20 @@ pivot = pivot.sort_values('_sort', ascending=False).drop(columns='_sort')
 
 fig, ax = plt.subplots(figsize=(14, max(8, len(pivot) * 0.7)))
 
-# Custom colormap: white -> warning -> accent (more = hotter)
+# Normalize each column (recency tier) independently so gradient is per date range
 from matplotlib.colors import LinearSegmentedColormap
 cmap = LinearSegmentedColormap.from_list('leakage', ['#FFFFFF', '#FF9F1C', '#E63946'])
 
+pivot_normed = pivot.copy()
+for col in pivot_normed.columns:
+    col_max = pivot_normed[col].max()
+    pivot_normed[col] = pivot_normed[col] / col_max if col_max > 0 else 0
+
+# Draw heatmap with normalized colors but show raw counts as annotations
 sns.heatmap(
-    pivot, annot=True, fmt=',.0f', cmap=cmap,
-    linewidths=2, linecolor='white',
-    cbar_kws={'label': 'Account Count', 'shrink': 0.6},
+    pivot_normed, annot=pivot.values, fmt=',.0f', cmap=cmap,
+    linewidths=2, linecolor='white', vmin=0, vmax=1,
+    cbar=False,
     annot_kws={'fontsize': 16, 'fontweight': 'bold'},
     ax=ax
 )
@@ -42,12 +48,12 @@ ax.set_ylabel('', fontsize=1)
 ax.set_xticklabels(ax.get_xticklabels(), fontsize=15, fontweight='bold', rotation=0)
 ax.set_yticklabels(ax.get_yticklabels(), fontsize=14, fontweight='bold', rotation=0)
 
-ax.set_title("Leakage Recency Heatmap",
-             fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 0.97, "Hot zones = active leakage you can still intercept",
-        transform=ax.transAxes, fontsize=15, color=GEN_COLORS['muted'], style='italic')
+fig.suptitle("Leakage Recency Heatmap",
+             fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], y=0.97)
+fig.text(0.02, 0.93, "Hot zones = active leakage you can still intercept",
+         fontsize=15, color=GEN_COLORS['muted'], style='italic')
 
-plt.tight_layout()
+plt.tight_layout(rect=[0, 0, 1, 0.91])
 plt.show()
 
 # Opportunity callout
