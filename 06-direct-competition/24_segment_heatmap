@@ -2,7 +2,7 @@
 # SEGMENT HEATMAP: Per-Category Risk Heatmap (Conference Edition)
 # ===========================================================================
 # Color-coded grid: red scale for Competitor-Heavy (bad), green scale for
-# CU-Focused (good). One heatmap per category with 3+ competitors.
+# Primary (good). One heatmap per category with 3+ competitors.
 
 if len(competitor_spend_analysis) > 0:
     import matplotlib.patches as mpatches
@@ -25,7 +25,7 @@ if len(competitor_spend_analysis) > 0:
                 return '#FFD39B'                   # Light orange
             else:
                 return GEN_COLORS['grid']
-        else:  # CU-Focused -- high = good
+        else:  # Primary -- high = good
             if value >= 90:
                 return '#006400'                   # Dark green
             elif value >= 80:
@@ -52,7 +52,7 @@ if len(competitor_spend_analysis) > 0:
             'accounts': n,
             'heavy_pct': seg.get('Competitor-Heavy', 0) / n * 100,
             'balanced_pct': seg.get('Balanced', 0) / n * 100,
-            'cu_focused_pct': seg.get('CU-Focused', 0) / n * 100,
+            'primary_pct': seg.get('Primary', 0) / n * 100,
         })
 
     for cat_label, comps in _cat_groups.items():
@@ -65,7 +65,7 @@ if len(competitor_spend_analysis) > 0:
         cdf = cdf.head(20)
 
         names = cdf['competitor'].values
-        matrix = cdf[['heavy_pct', 'balanced_pct', 'cu_focused_pct']].values
+        matrix = cdf[['heavy_pct', 'balanced_pct', 'primary_pct']].values
 
         fig_h = max(8, len(names) * 0.55 + 3)
         fig, ax = plt.subplots(figsize=(14, fig_h))
@@ -93,7 +93,7 @@ if len(competitor_spend_analysis) > 0:
         ax.set_xticks([0, 2, 4])
         ax.set_yticks(np.arange(len(names)))
         ax.set_xticklabels(
-            ['Competitor-Heavy\n(>50%)', 'Balanced\n(25-50%)', 'CU-Focused\n(<25%)'],
+            ['Competitor-Heavy\n(>50%)', 'Balanced\n(25-50%)', 'Primary\n(<25%)'],
             fontsize=14, fontweight='bold',
         )
         short_names = [
@@ -129,4 +129,4 @@ if len(competitor_spend_analysis) > 0:
         # Color guide
         print(f"    {cat_label} heatmap:")
         print(f"      Competitor-Heavy: dark red (>=20%) = high risk")
-        print(f"      CU-Focused: dark green (>=90%) = very loyal")
+        print(f"      Primary: dark green (>=90%) = very loyal")

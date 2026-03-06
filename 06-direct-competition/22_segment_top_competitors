@@ -14,7 +14,7 @@ if len(competitor_spend_analysis) > 0:
             'accounts': n,
             'heavy_pct': seg.get('Competitor-Heavy', 0) / n * 100,
             'balanced_pct': seg.get('Balanced', 0) / n * 100,
-            'cu_focused_pct': seg.get('CU-Focused', 0) / n * 100,
+            'primary_pct': seg.get('Primary', 0) / n * 100,
         })
 
     _sdf = (
@@ -34,10 +34,10 @@ if len(competitor_spend_analysis) > 0:
     ax.barh(y, _sdf['balanced_pct'], left=_sdf['heavy_pct'],
             color=SEGMENT_PALETTE['Balanced'],
             label='Balanced (25-50%)', height=0.65, zorder=3)
-    ax.barh(y, _sdf['cu_focused_pct'],
+    ax.barh(y, _sdf['primary_pct'],
             left=_sdf['heavy_pct'] + _sdf['balanced_pct'],
-            color=SEGMENT_PALETTE['CU-Focused'],
-            label='CU-Focused (<25%)', height=0.65, zorder=3)
+            color=SEGMENT_PALETTE['Primary'],
+            label='Primary (<25%)', height=0.65, zorder=3)
 
     # Competitor labels
     short_names = [

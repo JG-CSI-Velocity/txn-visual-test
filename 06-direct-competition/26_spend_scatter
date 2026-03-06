@@ -13,14 +13,14 @@ if len(competitor_spend_analysis) > 0 and len(deep_dive_competitors) > 0:
         fig, ax = plt.subplots(figsize=(14, 9))
 
         scatter = ax.scatter(
-            df['your_cu_spend'], df['competitor_spend'],
+            df['your_spend'], df['competitor_spend'],
             s=100, alpha=0.65,
             c=df['competitor_pct'], cmap='RdYlGn_r',
             edgecolors='white', linewidth=0.8,
             vmin=0, vmax=100, zorder=3,
         )
 
-        ax.set_xlabel('Your CU Spend ($)', fontsize=16, fontweight='bold', labelpad=12)
+        ax.set_xlabel('Your Spend ($)', fontsize=16, fontweight='bold', labelpad=12)
         ax.set_ylabel(f'{comp_name} Spend ($)', fontsize=16, fontweight='bold', labelpad=12)
         ax.xaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
         ax.yaxis.set_major_formatter(plt.FuncFormatter(gen_fmt_count))
@@ -35,25 +35,25 @@ if len(competitor_spend_analysis) > 0 and len(deep_dive_competitors) > 0:
                        fontsize=12, fontweight='bold')
 
         # 50/50 diagonal reference
-        max_val = max(df['your_cu_spend'].max(), df['competitor_spend'].max())
+        max_val = max(df['your_spend'].max(), df['competitor_spend'].max())
         ax.plot([0, max_val], [0, max_val], '--',
                 color=GEN_COLORS['muted'], alpha=0.5, linewidth=2,
                 label='50/50 Line', zorder=2)
 
         # Median crosshairs
-        med_cu = df['your_cu_spend'].median()
+        med_cu = df['your_spend'].median()
         med_comp = df['competitor_spend'].median()
         ax.axvline(med_cu, color=GEN_COLORS['info'], linestyle=':', alpha=0.4, linewidth=2)
         ax.axhline(med_comp, color=GEN_COLORS['accent'], linestyle=':', alpha=0.4, linewidth=2)
 
         # Quadrant labels
-        ax.text(0.03, 0.97, 'WINNING\nHigh CU / Low Competitor',
+        ax.text(0.03, 0.97, 'WINNING\nHigh Ours / Low Competitor',
                 transform=ax.transAxes, ha='left', va='top',
                 bbox=dict(boxstyle='round', facecolor=GEN_COLORS['success'],
                           alpha=0.85, edgecolor='white', linewidth=2),
                 fontsize=10, fontweight='bold', color='white')
 
-        ax.text(0.97, 0.97, 'HIGH RISK\nHigh Competitor / Low CU',
+        ax.text(0.97, 0.97, 'HIGH RISK\nHigh Competitor / Low Ours',
                 transform=ax.transAxes, ha='right', va='top',
                 bbox=dict(boxstyle='round', facecolor=GEN_COLORS['accent'],
                           alpha=0.85, edgecolor='white', linewidth=2),
@@ -88,9 +88,9 @@ if len(competitor_spend_analysis) > 0 and len(deep_dive_competitors) > 0:
 
         # Quadrant counts
         high_risk = len(df[(df['competitor_spend'] > med_comp) &
-                           (df['your_cu_spend'] < med_cu)])
+                           (df['your_spend'] < med_cu)])
         winning = len(df[(df['competitor_spend'] < med_comp) &
-                         (df['your_cu_spend'] > med_cu)])
+                         (df['your_spend'] > med_cu)])
         n = len(df)
         print(f"    {comp_name}: "
               f"Winning {winning:,} ({winning/n*100:.1f}%)  |  "

@@ -14,11 +14,11 @@ if len(competitor_spend_analysis) > 0 and len(deep_dive_competitors) > 0:
         fig_h = max(5, n * 0.45 + 3)
         fig, ax = plt.subplots(figsize=(14, fig_h))
 
-        ax.barh(range(n), top['your_cu_spend'],
-                color=GEN_COLORS['success'], label='Your CU Spend',
+        ax.barh(range(n), top['your_spend'],
+                color=GEN_COLORS['success'], label='Your Spend',
                 edgecolor='white', linewidth=1, height=0.6, zorder=3)
         ax.barh(range(n), top['competitor_spend'],
-                left=top['your_cu_spend'],
+                left=top['your_spend'],
                 color=GEN_COLORS['accent'], label=f'{comp_name} Spend',
                 edgecolor='white', linewidth=1, height=0.6, zorder=3)
 
