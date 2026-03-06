@@ -1,5 +1,5 @@
 # ===========================================================================
-# HOLDER AGE DASHBOARD: Member Age vs Response Likelihood
+# HOLDER AGE DASHBOARD: Account Holder Age vs Response Likelihood
 # ===========================================================================
 # Single figure, 3 panels (1 row):
 #   Left:   Response rate by holder age band (hero)
@@ -63,7 +63,7 @@ else:
     ax1.set_xticklabels(_bands, fontsize=11, fontweight='bold')
     ax1.set_ylabel('Response Rate', fontsize=12, fontweight='bold', labelpad=6)
     ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0f}%"))
-    ax1.set_title('Response Rate by Member Age',
+    ax1.set_title('Response Rate by Account Holder Age',
                    fontsize=15, fontweight='bold', color=_DARK, pad=8)
 
     gen_clean_axes(ax1, keep_left=True, keep_bottom=True)
@@ -94,7 +94,7 @@ else:
                      f'{_med:.0f}yr', color=color, fontsize=11,
                      fontweight='bold', va='top', ha=_ha)
 
-        ax2.set_xlabel('Member Age (years)', fontsize=10, fontweight='bold', labelpad=6)
+        ax2.set_xlabel('Account Holder Age (years)', fontsize=10, fontweight='bold', labelpad=6)
         ax2.set_ylabel('Density', fontsize=12, fontweight='bold', labelpad=6)
         ax2.legend(fontsize=9, framealpha=0.9)
         ax2.set_title('Distribution: Resp vs Non-Resp',
@@ -130,13 +130,13 @@ else:
                 annot_kws={'fontsize': 9, 'fontweight': 'bold'},
                 ax=ax3, vmin=0,
             )
-            ax3.set_xlabel('Member Age', fontsize=10, fontweight='bold', labelpad=6)
+            ax3.set_xlabel('Account Holder Age', fontsize=10, fontweight='bold', labelpad=6)
             ax3.set_ylabel('Segment', fontsize=12, fontweight='bold', labelpad=6)
             ax3.set_xticklabels(ax3.get_xticklabels(), fontsize=9,
                                 fontweight='bold', rotation=0)
             ax3.set_yticklabels(ax3.get_yticklabels(), fontsize=10,
                                 fontweight='bold', rotation=0)
-            ax3.set_title('Segment x Member Age',
+            ax3.set_title('Segment x Account Holder Age',
                            fontsize=15, fontweight='bold', color=_DARK, pad=8)
         else:
             ax3.axis('off')
@@ -177,7 +177,7 @@ else:
             _y -= 0.10
 
     # Main title
-    fig.suptitle('Member Age & Campaign Response',
+    fig.suptitle('Account Holder Age & Campaign Response',
                  fontsize=22, fontweight='bold', color=_DARK, y=0.96)
     fig.text(0.5, 0.915,
              'How old is the account holder?  |  All mailers pooled',

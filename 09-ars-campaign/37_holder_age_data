@@ -1,7 +1,7 @@
 # ===========================================================================
 # ACCOUNT HOLDER AGE: Are Younger or Older Members More Likely to Respond?
 # ===========================================================================
-# Uses DOB or 'Account Holder Age' from ODDD to compute the member's
+# Uses DOB or 'Account Holder Age' from ODDD to compute the account holder's
 # actual age at the time of each mailing.
 #
 # Output: holder_age_df   (per-account-wave with holder_age, age_band, status)
