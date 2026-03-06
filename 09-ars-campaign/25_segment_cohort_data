@@ -127,20 +127,26 @@ try:
         status = pd.Series('Non-Responder', index=resp_vals.index)
         status[is_success] = 'Responder'
 
-        # -- Compute spend at each month offset --
-        # Map offset → spend column
+        # -- Compute spend AND swipes at each month offset --
         offset_spend = {}
+        offset_swipes = {}
         _avail_offsets = []
+        _avail_swipe_offsets = []
         for offset in MONTH_OFFSETS:
             target_date = mail_date + pd.DateOffset(months=offset)
             target_label = target_date.strftime('%b%y')
-            # Handle case-sensitive month labels (Jan vs jan)
             if target_label in spend_lookup:
                 s_col = spend_lookup[target_label]
                 offset_spend[offset] = pd.to_numeric(
                     rewards_df.loc[was_mailed, s_col], errors='coerce'
                 ).fillna(0)
                 _avail_offsets.append(offset)
+            if 'swipe_month_map' in dir() and target_label in swipe_month_map:
+                sw_col = swipe_month_map[target_label]
+                offset_swipes[offset] = pd.to_numeric(
+                    rewards_df.loc[was_mailed, sw_col], errors='coerce'
+                ).fillna(0)
+                _avail_swipe_offsets.append(offset)
 
         if len(_avail_offsets) == 0:
             continue
@@ -148,7 +154,7 @@ try:
         _min_offset = min(_avail_offsets)
         _max_offset = max(_avail_offsets)
 
-        # Build one row per account with segment, status, and spend by offset
+        # Build one row per account with segment, status, spend + swipes by offset
         _wave_df = pd.DataFrame({
             'acct_number': acct_nums_wave.values,
             'wave': wave_label,
@@ -158,6 +164,8 @@ try:
         })
         for offset in _avail_offsets:
             _wave_df[f'm{offset:+d}'] = offset_spend[offset].values
+        for offset in _avail_swipe_offsets:
+            _wave_df[f'sw{offset:+d}'] = offset_swipes[offset].values
 
         seg_monthly_rows.append(_wave_df)
 
