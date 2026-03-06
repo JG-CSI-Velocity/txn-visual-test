@@ -29,7 +29,8 @@ display_matrix = cooccurrence.copy().astype(float)
 for i in range(len(categories_list)):
     display_matrix.iloc[i, i] = np.nan
 
-fig, ax = plt.subplots(figsize=(14, 10))
+fig, ax = plt.subplots(figsize=(16, 11))
+fig.subplots_adjust(top=0.88, bottom=0.18, left=0.18, right=0.95)
 
 from matplotlib.colors import LinearSegmentedColormap
 cmap = LinearSegmentedColormap.from_list('combo', ['#F8F9FA', '#457B9D', '#E63946'])
@@ -38,21 +39,20 @@ sns.heatmap(
     display_matrix, annot=True, fmt=',.0f', cmap=cmap,
     linewidths=2, linecolor='white',
     cbar_kws={'label': 'Shared Accounts', 'shrink': 0.6},
-    annot_kws={'fontsize=': 13, 'fontweight': 'bold'},
+    annot_kws={'fontsize': 16, 'fontweight': 'bold'},
     mask=mask, ax=ax,
     xticklabels=categories_list,
     yticklabels=categories_list
 )
 
-ax.set_xticklabels(ax.get_xticklabels(), fontsize=12, fontweight='bold', rotation=45, ha='right')
-ax.set_yticklabels(ax.get_yticklabels(), fontsize=12, fontweight='bold', rotation=0)
+ax.set_xticklabels(ax.get_xticklabels(), fontsize=15, fontweight='bold', rotation=45, ha='right')
+ax.set_yticklabels(ax.get_yticklabels(), fontsize=15, fontweight='bold', rotation=0)
 
-ax.set_title("Product Co-Occurrence Matrix",
-             fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 0.97, "Hot cells = members using both external services. These reveal cross-sell chains.",
-        transform=ax.transAxes, fontsize=14, color=GEN_COLORS['muted'], style='italic')
+fig.suptitle("Product Co-Occurrence Matrix",
+             fontsize=28, fontweight='bold', color=GEN_COLORS['dark_text'], y=0.96)
+fig.text(0.5, 0.91, "Hot cells = members using both external services. These reveal cross-sell chains.",
+         ha='center', fontsize=16, color=GEN_COLORS['muted'], style='italic')
 
-plt.tight_layout()
 plt.show()
 
 # Top combinations callout

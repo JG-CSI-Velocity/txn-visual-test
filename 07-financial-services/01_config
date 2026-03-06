@@ -92,7 +92,7 @@ FINANCIAL_SERVICES_PATTERNS = {
 # Only uses big_nationals + digital_banks (not every competitor category)
 # to keep pattern count reasonable for regex matching in cell 02.
 # ---------------------------------------------------------------------------
-_OTHER_BANK_CATS = ('big_nationals', 'digital_banks', 'top_25_fed_district')
+_OTHER_BANK_CATS = ('big_nationals', 'digital_banks')  # dropped top_25_fed_district to cut noise
 _OTHER_BANK_SUFFIXES = ['PAYMENT', 'TRANSFER']
 
 _other_banks = []
