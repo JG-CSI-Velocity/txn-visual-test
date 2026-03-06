@@ -15,10 +15,16 @@ false_positive_patterns = [
     'AUTO PARTS', 'AUTOZONE', 'AUTO TRADER', 'TRADER JOE', "TRADER JOE'S"
 ]
 
+_REGEX_BATCH_SIZE = 80  # avoid massive regex alternations
+
 for category, patterns in FINANCIAL_SERVICES_PATTERNS.items():
-    category_mask = combined_df[search_column].str.contains(
-        '|'.join(patterns), case=False, na=False, regex=True
-    )
+    # Batch patterns to keep regex manageable
+    category_mask = pd.Series(False, index=combined_df.index)
+    for _i in range(0, len(patterns), _REGEX_BATCH_SIZE):
+        _batch = patterns[_i:_i + _REGEX_BATCH_SIZE]
+        category_mask |= combined_df[search_column].str.contains(
+            '|'.join(_batch), case=False, na=False, regex=True
+        )
     category_trans = combined_df[category_mask].copy()
 
     if len(category_trans) == 0:
