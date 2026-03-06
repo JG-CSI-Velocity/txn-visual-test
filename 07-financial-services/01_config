@@ -174,39 +174,10 @@ FINANCIAL_SERVICES_PATTERNS = {
         'GOOGLE PAY TRANSFER',
     ],
 
-    # 'Other Banks' is built dynamically below from COMPETITOR_MERCHANTS
+    # NOTE: "Other Banks" removed. Competitor bank detection is handled
+    # by section 06 (tag_competitors). This section focuses on financial
+    # products/services, not institutions.
 }
-
-# ---------------------------------------------------------------------------
-# Auto-build "Other Banks" from competitor config (client-agnostic)
-# Requires COMPETITOR_MERCHANTS from 06-direct-competition/01_competitor_config
-# Only uses big_nationals + digital_banks (not every competitor category)
-# to keep pattern count reasonable for regex matching in cell 02.
-# ---------------------------------------------------------------------------
-_OTHER_BANK_CATS = ('big_nationals', 'digital_banks', 'top_25_fed_district')
-_OTHER_BANK_SUFFIXES = ['PAYMENT', 'TRANSFER']
-
-_other_banks = []
-if 'COMPETITOR_MERCHANTS' in dir():
-    for _cat in _OTHER_BANK_CATS:
-        if _cat not in COMPETITOR_MERCHANTS:
-            continue
-        _pats = COMPETITOR_MERCHANTS[_cat]
-        for _p in _pats.get('starts_with', []):
-            _p_clean = _p.strip()
-            if _p_clean:
-                for _s in _OTHER_BANK_SUFFIXES:
-                    _other_banks.append(f'{_p_clean} {_s}')
-
-if _other_banks:
-    FINANCIAL_SERVICES_PATTERNS['Other Banks'] = _other_banks
-else:
-    # Fallback if competitor config not loaded yet
-    FINANCIAL_SERVICES_PATTERNS['Other Banks'] = [
-        'BANK OF AMERICA PAYMENT', 'WELLS FARGO PAYMENT',
-        'CHASE PAYMENT', 'US BANK PAYMENT', 'CITIBANK PAYMENT',
-        'CAPITAL ONE PAYMENT', 'ALLY BANK PAYMENT',
-    ]
 
 import pandas as pd
 import matplotlib.pyplot as plt
