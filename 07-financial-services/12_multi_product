@@ -1,5 +1,5 @@
 # ===========================================================================
-# MULTI-PRODUCT: How Many External Services per Member?
+# MULTI-PRODUCT: How Many External Services per Account Holder?
 # ===========================================================================
 
 multi_dist = multi_product_df['category_count'].value_counts().sort_index()
@@ -30,7 +30,7 @@ gen_clean_axes(ax)
 ax.yaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
 ax.set_axisbelow(True)
 
-ax.set_title("External Product Depth per Member",
+ax.set_title("External Product Depth per Account Holder",
              fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
 ax.text(0.0, 0.97, "More categories = deeper external relationships = higher priority",
         transform=ax.transAxes, fontsize=15, color=GEN_COLORS['muted'], style='italic')

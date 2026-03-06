@@ -1,5 +1,5 @@
 # ===========================================================================
-# ACCOUNTS BY CATEGORY: Where Are Members Going?
+# ACCOUNTS BY CATEGORY: Where Are Account Holders Going?
 # ===========================================================================
 
 cat_data = finserv_summary_df.copy().sort_values('unique_accounts', ascending=True)
@@ -31,10 +31,10 @@ ax.xaxis.grid(True, color=GEN_COLORS['grid'], linewidth=0.5, alpha=0.7)
 ax.set_axisbelow(True)
 ax.set_xlim(0, cat_data['unique_accounts'].max() * 1.35)
 
-ax.set_title("Member Leakage by Product Category",
+ax.set_title("Account Holder Leakage by Product Category",
              fontsize=26, fontweight='bold',
              color=GEN_COLORS['dark_text'], pad=20, loc='left')
-ax.text(0.0, 0.97, "How many members are paying external financial service providers?",
+ax.text(0.0, 0.97, "How many account holders are paying external financial service providers?",
         transform=ax.transAxes, fontsize=15, color=GEN_COLORS['muted'], style='italic')
 
 plt.tight_layout()

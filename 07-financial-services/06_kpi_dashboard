@@ -11,9 +11,9 @@ avg_categories = multi_product_df['category_count'].mean()
 active_30d = len(multi_product_df[multi_product_df['recency_days'] <= 30])
 
 kpis = [
-    (f"{pct_leaking:.1f}%",     "of Members Pay\nExternal FinServ",   GEN_COLORS['accent']),
+    (f"{pct_leaking:.1f}%",     "of Account Holders Pay\nExternal FinServ",   GEN_COLORS['accent']),
     (f"{len(financial_services_data)}", "Product Categories\nDetected",  GEN_COLORS['info']),
-    (f"{avg_categories:.1f}",   "Avg External Services\nper Member",  GEN_COLORS['warning']),
+    (f"{avg_categories:.1f}",   "Avg External Services\nper Account Holder",  GEN_COLORS['warning']),
     (f"{active_30d:,}",         "Active Leakage\n(Last 30 Days)",     GEN_COLORS['success']),
 ]
 
@@ -48,5 +48,5 @@ plt.tight_layout()
 plt.show()
 
 if pct_leaking > 30:
-    print(f"\n    INSIGHT: {pct_leaking:.0f}% of your members are making payments to external financial services.")
-    print(f"    That is {leaking_members:,} members with active relationships elsewhere.")
+    print(f"\n    INSIGHT: {pct_leaking:.0f}% of your account holders are making payments to external financial services.")
+    print(f"    That is {leaking_members:,} account holders with active relationships elsewhere.")

@@ -85,7 +85,7 @@ plt.show()
 
 if latest_growth < 0:
     print(f"\n    OPPORTUNITY: External FinServ activity declined {latest_growth:.1f}% last month.")
-    print("    Members may be pulling back -- reinforce with targeted product offers.")
+    print("    Account holders may be pulling back -- reinforce with targeted product offers.")
 elif latest_growth > 5:
     print(f"\n    WARNING: External FinServ activity grew {latest_growth:.1f}% last month.")
     print("    Leakage is accelerating -- immediate retention action needed.")

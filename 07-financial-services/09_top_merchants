@@ -1,5 +1,5 @@
 # ===========================================================================
-# TOP MERCHANTS: Who Is Draining Your Members?
+# TOP MERCHANTS: Who Is Draining Your Account Holders?
 # ===========================================================================
 # Specific merchant names, not categories. The "name and shame" chart.
 
@@ -47,9 +47,9 @@ if len(all_merchant_data) > 0:
     ax.set_axisbelow(True)
     ax.set_xlim(0, plot_data['unique_accounts'].max() * 1.40)
 
-    ax.set_title("Top 15 External Merchants by Member Reach",
+    ax.set_title("Top 15 External Merchants by Account Holder Reach",
                  fontsize=26, fontweight='bold', color=GEN_COLORS['dark_text'], pad=20, loc='left')
-    ax.text(0.0, 0.97, "These specific companies have the most relationships with your members",
+    ax.text(0.0, 0.97, "These specific companies have the most relationships with your account holders",
             transform=ax.transAxes, fontsize=15, color=GEN_COLORS['muted'], style='italic')
 
     # Category legend
@@ -65,5 +65,5 @@ if len(all_merchant_data) > 0:
 
     # Opportunity callout
     top1 = top_merchants.iloc[0]
-    print(f"\n    INSIGHT: {top1['merchant']} alone has {int(top1['unique_accounts']):,} of your members.")
-    print(f"    The top 5 merchants account for {top_merchants.head(5)['unique_accounts'].sum():,} member relationships.")
+    print(f"\n    INSIGHT: {top1['merchant']} alone has {int(top1['unique_accounts']):,} of your account holders.")
+    print(f"    The top 5 merchants account for {top_merchants.head(5)['unique_accounts'].sum():,} account holder relationships.")

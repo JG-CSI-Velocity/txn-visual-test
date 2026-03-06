@@ -1,7 +1,7 @@
 # ===========================================================================
 # CATEGORY COMBINATIONS: Which Services Travel Together?
 # ===========================================================================
-# Co-occurrence matrix: if a member uses Auto Loans externally,
+# Co-occurrence matrix: if an account holder uses Auto Loans externally,
 # what else are they using? Reveals cross-sell chains.
 
 from itertools import combinations
@@ -51,7 +51,7 @@ ax.set_yticklabels(ax.get_yticklabels(), fontsize=15, fontweight='bold', rotatio
 
 fig.suptitle("Product Co-Occurrence Matrix",
              fontsize=28, fontweight='bold', color=GEN_COLORS['dark_text'], y=0.96)
-fig.text(0.5, 0.91, "Hot cells = members using both external services. These reveal cross-sell chains.",
+fig.text(0.5, 0.91, "Hot cells = account holders using both external services. These reveal cross-sell chains.",
          ha='center', fontsize=16, color=GEN_COLORS['muted'], style='italic')
 
 plt.show()
@@ -65,9 +65,9 @@ for c1, c2 in combinations(categories_list, 2):
 
 combo_pairs.sort(key=lambda x: x[2], reverse=True)
 if len(combo_pairs) > 0:
-    print(f"\n    TOP PRODUCT COMBINATIONS (members using both externally):")
+    print(f"\n    TOP PRODUCT COMBINATIONS (account holders using both externally):")
     for c1, c2, count in combo_pairs[:5]:
-        print(f"      {c1} + {c2}: {int(count):,} members")
+        print(f"      {c1} + {c2}: {int(count):,} account holders")
     top_combo = combo_pairs[0]
-    print(f"\n    INSIGHT: {int(top_combo[2]):,} members have BOTH {top_combo[0]} and {top_combo[1]} externally.")
+    print(f"\n    INSIGHT: {int(top_combo[2]):,} account holders have BOTH {top_combo[0]} and {top_combo[1]} externally.")
     print(f"    Bundle these products in a single retention offer for maximum impact.")

@@ -27,7 +27,7 @@ list_2_display.columns = ['Categories', 'Total Txn', 'Days Since Last', 'Leakage
 
 print(f"\n--- LIST 2: ACTIVE LEAKAGE (transaction in last 30 days) ---")
 print(f"Total accounts: {len(list_2):,}")
-print(f"Recommended action: Immediate outreach -- these members are actively paying competitors\n")
+print(f"Recommended action: Immediate outreach -- these account holders are actively paying competitors\n")
 if len(list_2) > 0:
     display(list_2_display.style.hide(axis='index') if hasattr(list_2_display, 'style') else list_2_display.head(25))
 
@@ -78,7 +78,7 @@ list_6_display.columns = ['Categories', 'Total Txn', 'Days Since First', 'Leakag
 
 print(f"\n--- LIST 6: NEW LEAKAGE (first external finserv < 90 days ago) ---")
 print(f"Total accounts: {len(list_6):,}")
-print(f"Recommended action: Immediate re-engagement -- you just lost these members\n")
+print(f"Recommended action: Immediate re-engagement -- you just lost these account holders\n")
 if len(list_6) > 0:
     display(list_6_display.style.hide(axis='index') if hasattr(list_6_display, 'style') else list_6_display.head(25))
 
