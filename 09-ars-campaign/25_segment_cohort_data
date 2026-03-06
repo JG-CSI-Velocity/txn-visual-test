@@ -174,7 +174,7 @@ try:
                 ('text-align', 'left'), ('padding-bottom', '10px'),
             ]},
         ])
-        .set_caption(f"Segment Cohort Data: Wave Overview  ({DATASET_LABEL})")
+        .set_caption("Segment Cohort Data: Wave Overview")
     )
     display(_styled_ov)
 

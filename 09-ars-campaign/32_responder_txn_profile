@@ -218,7 +218,7 @@ else:
                     ('text-align', 'left'), ('padding-bottom', '10px'),
                 ]},
             ])
-            .set_caption(f"Responder vs Non-Responder Transaction Profile  (Post-Mail Period, {DATASET_LABEL})")
+            .set_caption("Responder vs Non-Responder Transaction Profile  (Post-Mail Transactions)")
         )
         display(_styled)
 
