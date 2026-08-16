@@ -44,7 +44,7 @@ else:
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(gen_fmt_count))
     ax.tick_params(axis='y', labelsize=15)
     ax.tick_params(axis='x', labelsize=14)
-    ax.text(0.5, -0.12, f'Median: {_df[_field].median():.0f} days between deposits',
+    ax.text(0.5, -0.18, f'Median: {_df[_field].median():.0f} days between deposits',
             transform=ax.transAxes, ha='center', fontsize=12, color=GEN_COLORS['muted'])
     gen_clean_axes(ax)
     plt.tight_layout()

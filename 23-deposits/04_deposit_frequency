@@ -44,11 +44,10 @@ else:
     # ---------------------------------------------------------------------------
     # Chart: Horizontal bar
     # ---------------------------------------------------------------------------
-    fig, ax = plt.subplots(figsize=(14, 6))
+    fig, ax = plt.subplots(figsize=(14, 5))
 
-    _y_pos = range(len(_labels))
     _bars = ax.barh(_labels[::-1], _seg_counts.values[::-1],
-                    color=_seg_colors[::-1], edgecolor='white', height=0.55)
+                    color=_seg_colors[::-1], edgecolor='white', height=0.7)
 
     for bar, val in zip(_bars, _seg_counts.values[::-1]):
         _pct = val / _total * 100
@@ -64,11 +63,11 @@ else:
     ax.tick_params(axis='y', labelsize=15)
     ax.tick_params(axis='x', labelsize=14)
 
-    ax.text(0.5, -0.12,
+    ax.text(0.5, -0.18,
             f'Median: {_df[_field].median():.0f} days between deposits  |  Based on avgdaysbetweendeposits',
             transform=ax.transAxes, ha='center', fontsize=12,
             color=GEN_COLORS['muted'])
 
     gen_clean_axes(ax)
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.06, 1, 1])
     plt.show()

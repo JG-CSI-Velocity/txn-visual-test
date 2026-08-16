@@ -1,0 +1,108 @@
+# ===========================================================================
+# PERSONAL DEPOSITS: Deposit Behavior by Account Holder Age
+# ===========================================================================
+# Cross-tab deposit metrics by holder age band (18-25, 26-35, etc.).
+# Fields: Account Holder Age from ODDD, deposit fields from ZAccounts.
+# Data: deposits_personal_df
+
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+import numpy as np
+
+_df = deposits_personal_df.copy()
+_age_field = 'Account Holder Age'
+
+if _age_field not in _df.columns:
+    print(f"    20 Skipped: '{_age_field}' not available in deposits_personal_df")
+else:
+    _df['_holder_age'] = pd.to_numeric(_df[_age_field], errors='coerce')
+    _df = _df[_df['_holder_age'].notna()].copy()
+
+    _age_bins = [18, 26, 36, 46, 56, 66, 200]
+    _age_labels = ['18-25', '26-35', '36-45', '46-55', '56-65', '65+']
+    _df['_age_band'] = pd.cut(_df['_holder_age'], bins=_age_bins, labels=_age_labels, right=False)
+    _df = _df[_df['_age_band'].notna()].copy()
+    _total = len(_df)
+
+    if _total == 0:
+        print(f"    20 Skipped: no accounts with valid age data")
+    else:
+        # Build summary by age band
+        _summary = []
+        for band in _age_labels:
+            _band_df = _df[_df['_age_band'] == band]
+            _n = len(_band_df)
+            if _n == 0:
+                continue
+            _active = (_band_df['depCount365'] > 0).sum() if 'depCount365' in _band_df.columns else 0
+            _active_pct = _active / _n * 100
+            _median_bal = _band_df.loc[_band_df['depCount365'] > 0, 'balance'].median() if 'balance' in _band_df.columns and _active > 0 else np.nan
+            _avg_dep = _band_df.loc[_band_df['depAmt365'] > 0, 'depAmt365'].mean() if 'depAmt365' in _band_df.columns else np.nan
+            _median_freq = _band_df.loc[_band_df['depCount365'] > 0, 'avgdaysbetweendeposits'].median() if 'avgdaysbetweendeposits' in _band_df.columns else np.nan
+            _ach = (_band_df['autodeposit'].astype(str).str.strip().str.lower().isin(
+                ['yes', 'y', 'true', '1', '1.0'])).mean() * 100 if 'autodeposit' in _band_df.columns else np.nan
+
+            _summary.append({
+                'band': band, 'n': _n, 'active': _active,
+                'active_pct': _active_pct, 'median_bal': _median_bal,
+                'avg_dep': _avg_dep, 'median_freq': _median_freq, 'ach_pct': _ach,
+            })
+
+        print(f"    20 Data Decisions:")
+        print(f"      Source: deposits_personal_df")
+        print(f"      Accounts with age data: {_total:,}")
+
+        # ---------------------------------------------------------------
+        # Chart: Active rate by age band (bar) + median balance (line)
+        # ---------------------------------------------------------------
+        fig, ax1 = plt.subplots(figsize=(14, 7))
+
+        _bands = [s['band'] for s in _summary]
+        _active_pcts = [s['active_pct'] for s in _summary]
+        _balances = [s['median_bal'] for s in _summary]
+        _counts = [s['n'] for s in _summary]
+        _bar_colors = [AGE_PALETTE.get(b, GEN_COLORS['muted']) for b in _bands]
+
+        _bars = ax1.bar(_bands, _active_pcts, color=_bar_colors, edgecolor='white',
+                        width=0.6, linewidth=2)
+
+        for bar, pct, n in zip(_bars, _active_pcts, _counts):
+            ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.5,
+                     f"{pct:.0f}%\n({n:,})",
+                     ha='center', va='bottom', fontsize=14, fontweight='bold',
+                     color=GEN_COLORS['dark_text'], linespacing=1.2)
+
+        ax1.set_ylabel('Active Rate (365d) %', fontsize=16, fontweight='bold')
+        ax1.set_ylim(0, max(_active_pcts) * 1.25)
+        ax1.yaxis.set_major_formatter(mticker.FuncFormatter(gen_fmt_pct))
+        ax1.tick_params(axis='x', labelsize=15)
+        ax1.tick_params(axis='y', labelsize=13)
+
+        # Overlay: median balance line
+        ax2 = ax1.twinx()
+        _valid_bals = [(i, b) for i, b in enumerate(_balances) if not np.isnan(b)]
+        if _valid_bals:
+            _bi, _bv = zip(*_valid_bals)
+            ax2.plot(_bi, _bv, color=GEN_COLORS['accent'], linewidth=3,
+                     marker='o', markersize=10, markerfacecolor='white',
+                     markeredgecolor=GEN_COLORS['accent'], markeredgewidth=2.5)
+            for i, v in zip(_bi, _bv):
+                ax2.text(i, v + max(_bv) * 0.04, f"${v:,.0f}",
+                         ha='center', va='bottom', fontsize=13, fontweight='bold',
+                         color=GEN_COLORS['accent'])
+            ax2.set_ylabel('Median Balance (Active)', fontsize=16, fontweight='bold',
+                          color=GEN_COLORS['accent'])
+            ax2.tick_params(axis='y', labelsize=13, colors=GEN_COLORS['accent'])
+            ax2.spines['right'].set_color(GEN_COLORS['accent'])
+
+        ax1.set_title('Personal Accounts \u2014 Deposit Activity by Holder Age',
+                      fontsize=22, fontweight='bold', color=GEN_COLORS['dark_text'], pad=15)
+
+        ax1.text(0.5, -0.18,
+                 'Bars = active rate (deposited in 365d)  |  Line = median balance among active  |  Count in parentheses',
+                 transform=ax1.transAxes, ha='center', fontsize=12,
+                 color=GEN_COLORS['muted'])
+
+        gen_clean_axes(ax1)
+        plt.tight_layout()
+        plt.show()
